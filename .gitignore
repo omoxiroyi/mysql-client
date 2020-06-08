@@ -1,0 +1,9 @@
+# Project exclude paths
+/.gradle/
+/async/build/
+/async/out/
+/async/out/production/classes/
+/sync/out/
+/sync/out/production/classes/
+/logs
+/.idea/
