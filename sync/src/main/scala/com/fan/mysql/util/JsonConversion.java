@@ -123,7 +123,7 @@ public class JsonConversion {
             case JSONB_TYPE_UINT64:
                 return new Json_Value(Json_enum_type.UINT, buffer.getUlong64());
             case JSONB_TYPE_DOUBLE:
-                return new Json_Value(Json_enum_type.DOUBLE, Double.valueOf(buffer.getDouble64()));
+                return new Json_Value(Json_enum_type.DOUBLE, buffer.getDouble64());
             case JSONB_TYPE_STRING:
                 int max_bytes = (int) Math.min(len, 5);
                 long tlen = 0;
@@ -278,7 +278,7 @@ public class JsonConversion {
             return parse_value(type, m_data, (int) m_length - value_offset);
         }
 
-        public StringBuilder toJsonString(StringBuilder buf) {
+        public void toJsonString(StringBuilder buf) {
             switch (m_type) {
                 case OBJECT:
                     buf.append("{");
@@ -306,8 +306,6 @@ public class JsonConversion {
                     buf.append(Double.valueOf(m_double_value).toString());
                     break;
                 case INT:
-                    buf.append(m_int_value.toString());
-                    break;
                 case UINT:
                     buf.append(m_int_value.toString());
                     break;
@@ -375,7 +373,6 @@ public class JsonConversion {
                     throw new IllegalArgumentException("illegal json data");
             }
 
-            return buf;
         }
     }
 

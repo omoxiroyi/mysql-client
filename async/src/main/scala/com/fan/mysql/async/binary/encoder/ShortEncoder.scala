@@ -6,7 +6,7 @@ import com.fan.mysql.async.column.ColumnTypes
 import io.netty.buffer.ByteBuf
 
 object ShortEncoder extends BinaryEncoder {
-  def encode(value: Any, buffer: ByteBuf) {
+  def encode(value: Any, buffer: ByteBuf):Unit = {
     buffer.writeShort(value.asInstanceOf[Short])
   }
 

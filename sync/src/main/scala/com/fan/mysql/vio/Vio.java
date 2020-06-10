@@ -21,7 +21,7 @@ public class Vio {
     }
 
     public int vio_read_buff(byte[] dest, int offset, int size) throws IOException {
-        int receive_size = 0;
+        int receive_size;
         int VIO_UNBUFFERED_READ_MIN_SIZE = 2048;
         if (read_pos < read_end) {
             // read cache data

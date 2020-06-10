@@ -9,6 +9,7 @@ import com.fan.mysql.event.EventHeader;
 import com.fan.mysql.event.impl.RotateEvent;
 import com.fan.mysql.util.ByteUtil;
 
+@SuppressWarnings("unused")
 public class RotateEventParser implements BinlogEventParser {
 
     public BinlogEvent parse(LogBuffer buffer, EventHeader header, BinlogContext context) {

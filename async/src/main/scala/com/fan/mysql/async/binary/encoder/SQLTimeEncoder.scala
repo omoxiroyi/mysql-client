@@ -7,7 +7,7 @@ import io.netty.buffer.ByteBuf
 import org.joda.time.LocalTime
 
 object SQLTimeEncoder extends BinaryEncoder {
-  def encode(value: Any, buffer: ByteBuf) {
+  def encode(value: Any, buffer: ByteBuf): Unit = {
     val sqlTime = value.asInstanceOf[java.sql.Time].getTime
     val time = new LocalTime(sqlTime)
     LocalTimeEncoder.encode(time, buffer)

@@ -61,7 +61,7 @@ class ChannelWrapper(val buffer: ByteBuf) extends AnyVal {
     (first & 0xff) | ((second & 0xff) << 8) | ((third & 0xff) << 16)
   }
 
-  def writeLength(length: Long) {
+  def writeLength(length: Long): Unit = {
     if (length < 251) {
       buffer.writeByte(length.asInstanceOf[Byte])
     } else if (length < 65536L) {
@@ -76,19 +76,19 @@ class ChannelWrapper(val buffer: ByteBuf) extends AnyVal {
     }
   }
 
-  def writeLongInt(i: Int) {
+  def writeLongInt(i: Int): Unit = {
     buffer.writeByte(i & 0xff)
     buffer.writeByte(i >>> 8)
     buffer.writeByte(i >>> 16)
   }
 
-  def writeLenghtEncodedString(value: String, charset: Charset) {
+  def writeLengthEncodedString(value: String, charset: Charset): Unit = {
     val bytes = value.getBytes(charset)
     writeLength(bytes.length)
     buffer.writeBytes(bytes)
   }
 
-  def writePacketLength(sequence: Int = 0) {
+  def writePacketLength(sequence: Int = 0): Unit = {
     ByteBufferUtils.writePacketLength(buffer, sequence)
   }
 

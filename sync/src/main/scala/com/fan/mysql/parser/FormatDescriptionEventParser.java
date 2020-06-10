@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
  * string[p]        event type header lengths
  * ---------------------------------------------
  * */
+@SuppressWarnings("unused")
 public class FormatDescriptionEventParser implements BinlogEventParser {
 
 	private static final Logger logger = LoggerFactory.getLogger(FormatDescriptionEventParser.class);
@@ -80,7 +81,7 @@ public class FormatDescriptionEventParser implements BinlogEventParser {
 			versionSplit[1] = 0;
 			versionSplit[2] = 0;
 		} else {
-			int j = 0;
+			int j;
 			for (int i = 0; i <= 2; i++) {
 				String str = split[i];
 				for (j = 0; j < str.length(); j++) {

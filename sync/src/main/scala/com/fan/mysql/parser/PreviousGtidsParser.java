@@ -13,6 +13,7 @@ import com.fan.mysql.util.ByteUtil;
 import java.math.BigInteger;
 import java.util.Collection;
 
+@SuppressWarnings("unused")
 public class PreviousGtidsParser implements BinlogEventParser {
 
     @Override

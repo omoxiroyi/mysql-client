@@ -9,7 +9,7 @@ import io.netty.buffer.ByteBuf
 import org.joda.time.LocalDateTime
 
 object CalendarEncoder extends BinaryEncoder {
-  def encode(value: Any, buffer: ByteBuf) {
+  def encode(value: Any, buffer: ByteBuf):Unit = {
     val calendar = value.asInstanceOf[Calendar]
     LocalDateTimeEncoder.encode(new LocalDateTime(calendar.getTimeInMillis), buffer)
   }

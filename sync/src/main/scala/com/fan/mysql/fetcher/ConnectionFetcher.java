@@ -11,6 +11,7 @@ import java.net.SocketTimeoutException;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.SocketChannel;
 
+@SuppressWarnings("unused")
 public class ConnectionFetcher extends LogBuffer {
 
     private static final Logger logger = LoggerFactory.getLogger(ConnectionFetcher.class);
@@ -88,7 +89,6 @@ public class ConnectionFetcher extends LogBuffer {
                 int off = limit;
                 fetch0(off, NET_HEADER_SIZE);
                 netlen = getUint24(off + PACKET_LEN_OFFSET);
-                netnum = getUint8(off + PACKET_SEQ_OFFSET);
                 fetch0(off, netlen);
             }
             // reset position
@@ -96,10 +96,7 @@ public class ConnectionFetcher extends LogBuffer {
         } catch (SocketTimeoutException e) {
             logger.error("Socket timeout expired, closing connection", e);
             throw e;
-        } catch (InterruptedIOException e) {
-            logger.info("I/O interrupted while reading from client socket", e);
-            throw e;
-        } catch (ClosedByInterruptException e) {
+        } catch (InterruptedIOException | ClosedByInterruptException e) {
             logger.info("I/O interrupted while reading from client socket", e);
             throw e;
         } catch (IOException e) {

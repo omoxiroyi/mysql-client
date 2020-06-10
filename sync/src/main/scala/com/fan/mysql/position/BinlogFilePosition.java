@@ -1,5 +1,6 @@
 package com.fan.mysql.position;
 
+@SuppressWarnings("unused")
 public class BinlogFilePosition extends LogPosition {
 
     private final String fileName;

@@ -13,8 +13,8 @@ import com.fan.mysql.async.util.ChannelFutureTransformer._
 import com.fan.mysql.async.util.{CharsetMapper, Log}
 import io.netty.bootstrap.Bootstrap
 import io.netty.buffer.{ByteBuf, ByteBufAllocator, Unpooled}
-import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.channel._
+import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.CodecException
 import org.slf4j.Logger
 
@@ -136,7 +136,7 @@ class MySQLConnectionHandler(
   }
 
 
-  override def channelInactive(ctx: ChannelHandlerContext) {
+  override def channelInactive(ctx: ChannelHandlerContext): Unit = {
     log.debug("Channel became inactive")
   }
 
@@ -157,7 +157,7 @@ class MySQLConnectionHandler(
     handlerDelegate.exceptionCaught(cause)
   }
 
-  override def handlerAdded(ctx: ChannelHandlerContext) {
+  override def handlerAdded(ctx: ChannelHandlerContext): Unit = {
     this.currentContext = ctx
   }
 
@@ -196,7 +196,7 @@ class MySQLConnectionHandler(
 
   def disconnect: ChannelFuture = this.currentContext.close()
 
-  def clearQueryState() {
+  def clearQueryState(): Unit = {
     this.currentColumns.clear()
     this.currentParameters.clear()
     this.currentQuery = null
@@ -270,7 +270,7 @@ class MySQLConnectionHandler(
     this.currentPreparedStatementHolder = new PreparedStatementHolder(this.currentPreparedStatement.statement, message)
   }
 
-  def onColumnDefinitionFinished() {
+  def onColumnDefinitionFinished(): Unit = {
 
     val columns = if (this.currentPreparedStatementHolder != null) {
       this.currentPreparedStatementHolder.columns
@@ -310,7 +310,7 @@ class MySQLConnectionHandler(
     }
   }
 
-  private def handleEOF(m: ServerMessage) {
+  private def handleEOF(m: ServerMessage): Unit = {
     m match {
       case eof: EOFMessage =>
         val resultSet = this.currentQuery

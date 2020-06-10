@@ -30,7 +30,7 @@ class MutableResultSet[T <: ColumnData](
 
   override def apply(idx: Int): RowData = this.rows(idx)
 
-  def addRow(row: Array[Any]) {
+  def addRow(row: Array[Any]): Unit = {
     this.rows += new ArrayRowData(this.rows.size, this.columnMapping, row)
   }
 

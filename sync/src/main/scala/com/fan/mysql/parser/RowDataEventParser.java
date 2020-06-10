@@ -54,6 +54,7 @@ import java.util.TimeZone;
  *   ... repeat rows until event-end
  *
  * */
+@SuppressWarnings("unused")
 public class RowDataEventParser implements BinlogEventParser {
 
     private static final Logger logger = LoggerFactory.getLogger(RowDataEventParser.class);
@@ -368,7 +369,7 @@ public class RowDataEventParser implements BinlogEventParser {
                         break;
                 }
 
-                String second = null;
+                String second;
                 if (intpart == 0) {
                     second = "0000-00-00 00:00:00";
                 } else {

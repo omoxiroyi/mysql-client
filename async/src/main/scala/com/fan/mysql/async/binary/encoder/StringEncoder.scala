@@ -16,7 +16,7 @@ object StringEncoder {
 class StringEncoder(charset: Charset) extends BinaryEncoder {
 
   def encode(value: Any, buffer: ByteBuf): Unit = {
-    buffer.writeLenghtEncodedString(value.toString, charset)
+    buffer.writeLengthEncodedString(value.toString, charset)
   }
 
   def encodesTo: Int = ColumnTypes.FIELD_TYPE_VARCHAR

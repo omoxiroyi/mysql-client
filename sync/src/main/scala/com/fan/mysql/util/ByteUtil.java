@@ -1,5 +1,6 @@
 package com.fan.mysql.util;
 
+@SuppressWarnings("unused")
 public class ByteUtil {
 
     public static byte[] long2byte(long l, int len) {
