@@ -1,5 +1,7 @@
 package com.fan.mysql.binlog
 
-trait BinlogEventHandler {
+import com.fan.mysql.event.BinlogEvent
 
+trait BinlogEventHandler {
+  def handle(event: BinlogEvent): Boolean
 }

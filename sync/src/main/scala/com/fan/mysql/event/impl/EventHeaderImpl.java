@@ -1,9 +1,10 @@
 
-package com.dingcloud.dts.binlog.event.impl;
+package com.fan.mysql.event.impl;
 
-import com.dingcloud.dts.binlog.event.EventHeader;
-import com.dingcloud.dts.binlog.util.ByteUtil;
-import com.dingcloud.dts.binlog.util.ToStringBuilder;
+
+import com.fan.mysql.event.EventHeader;
+import com.fan.mysql.util.ByteUtil;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 public final class EventHeaderImpl implements EventHeader {
 

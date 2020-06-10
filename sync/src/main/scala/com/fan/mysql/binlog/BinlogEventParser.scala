@@ -1,5 +1,8 @@
 package com.fan.mysql.binlog
 
-class BinlogEventParser {
+import com.fan.mysql.dbsync.{BinlogContext, LogBuffer}
+import com.fan.mysql.event.{BinlogEvent, EventHeader}
 
+trait BinlogEventParser {
+  def parse(buffer: LogBuffer, header: EventHeader, context: BinlogContext): BinlogEvent
 }

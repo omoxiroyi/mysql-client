@@ -1,4 +1,4 @@
-package com.dingcloud.dts.binlog.column;
+package com.fan.mysql.column;
 
 import java.io.Serializable;
 

@@ -4,7 +4,7 @@ package com.fan.mysql.async.decoder
 
 import java.nio.charset.Charset
 
-import com.fan.mysql.async.message.server.{ResultSetRowMessage, ServerMessage}
+import com.fan.mysql.async.message.server.ResultSetRowMessage
 import com.fan.mysql.async.util.ChannelWrapper._
 import io.netty.buffer.ByteBuf
 
@@ -18,7 +18,7 @@ class ResultSetRowDecoder(charset: Charset) extends MessageDecoder {
 
   import ResultSetRowDecoder.NULL
 
-  def decode(buffer: ByteBuf): ServerMessage = {
+  def decode(buffer: ByteBuf): ResultSetRowMessage = {
     val row = new ResultSetRowMessage()
 
     while (buffer.isReadable()) {

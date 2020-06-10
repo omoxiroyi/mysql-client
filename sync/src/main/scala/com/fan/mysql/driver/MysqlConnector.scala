@@ -37,6 +37,8 @@ class MysqlConnector(address: InetSocketAddress,
 
   private[this] var defaultSchema: String = _
 
+  var dumping = false
+
   /**
    * Connect to a MySQL server and do handshake.
    */

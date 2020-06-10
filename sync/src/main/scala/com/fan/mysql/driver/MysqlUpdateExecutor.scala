@@ -20,7 +20,7 @@ class MysqlUpdateExecutor extends Logging {
     this.charset = connector.getCharset
   }
 
-  def this(ch: SocketChannel) {
+  def this(ch: SocketChannel) = {
     this()
     this.channel = ch
   }

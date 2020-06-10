@@ -22,8 +22,7 @@ case class ColumnDefinitionMessage(
                                     binaryDecoder: BinaryDecoder,
                                     textDecoder: ColumnDecoder
                                   )
-  extends ServerMessage(ServerMessage.ColumnDefinition)
-    with ColumnData {
+  extends ServerMessage(ServerMessage.ColumnDefinition) with ColumnData {
 
   def dataType: Int = this.columnType
 

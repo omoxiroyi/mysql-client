@@ -1,11 +1,12 @@
-package com.dingcloud.dts.binlog.parser;
+package com.fan.mysql.parser;
 
-import com.dingcloud.dts.binlog.BinlogEventParser;
-import com.dingcloud.dts.binlog.event.BinlogEvent;
-import com.dingcloud.dts.binlog.event.EventHeader;
-import com.dingcloud.dts.binlog.event.impl.XidEvent;
-import com.dingcloud.dts.binlog.mysql.dbsync.BinlogContext;
-import com.dingcloud.dts.binlog.mysql.dbsync.LogBuffer;
+
+import com.fan.mysql.binlog.BinlogEventParser;
+import com.fan.mysql.dbsync.BinlogContext;
+import com.fan.mysql.dbsync.LogBuffer;
+import com.fan.mysql.event.BinlogEvent;
+import com.fan.mysql.event.EventHeader;
+import com.fan.mysql.event.impl.XidEvent;
 
 public class XidEventParser implements BinlogEventParser {
 

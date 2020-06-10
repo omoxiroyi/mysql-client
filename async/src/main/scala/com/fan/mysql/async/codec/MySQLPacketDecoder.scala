@@ -90,7 +90,7 @@ class MySQLPacketDecoder(charset: Charset, connectionId: String) extends ByteToM
     }
   }
 
-  private def handleCommonFlow(messageType: Byte, slice: ByteBuf, out: java.util.List[Object]) {
+  private def handleCommonFlow(messageType: Byte, slice: ByteBuf, out: java.util.List[Object]): Unit = {
     val decoder = messageType match {
       case ServerMessage.Error =>
         this.clear()
@@ -136,7 +136,7 @@ class MySQLPacketDecoder(charset: Charset, connectionId: String) extends ByteToM
     doDecoding(decoder, slice, out)
   }
 
-  private def doDecoding(decoder: MessageDecoder, slice: ByteBuf, out: java.util.List[Object]) {
+  private def doDecoding(decoder: MessageDecoder, slice: ByteBuf, out: java.util.List[Object]): Unit = {
     if (decoder == null) {
       slice.readerIndex(slice.readerIndex() - 1)
       val result = decodeQueryResult(slice)
@@ -182,7 +182,7 @@ class MySQLPacketDecoder(charset: Charset, connectionId: String) extends ByteToM
     }
   }
 
-  private def decodeQueryResult(slice: ByteBuf): AnyRef = {
+  private def decodeQueryResult(slice: ByteBuf): ServerMessage = {
     if (!hasReadColumnsCount) {
       this.hasReadColumnsCount = true
       this.totalColumns = slice.readBinaryLength
@@ -193,7 +193,6 @@ class MySQLPacketDecoder(charset: Charset, connectionId: String) extends ByteToM
       this.processedParams += 1
       return this.columnDecoder.decode(slice)
     }
-
 
     if (this.totalColumns == this.processedColumns) {
       if (this.isPreparedStatementExecute) {
@@ -210,7 +209,7 @@ class MySQLPacketDecoder(charset: Charset, connectionId: String) extends ByteToM
 
   }
 
-  def preparedStatementPrepareStarted() {
+  def preparedStatementPrepareStarted(): Unit = {
     this.queryProcessStarted()
     this.hasReadColumnsCount = true
     this.processingParams = true
@@ -218,7 +217,7 @@ class MySQLPacketDecoder(charset: Charset, connectionId: String) extends ByteToM
     this.isPreparedStatementPrepare = true
   }
 
-  def preparedStatementExecuteStarted(columnsCount: Int, paramsCount: Int) {
+  def preparedStatementExecuteStarted(columnsCount: Int, paramsCount: Int): Unit = {
     this.queryProcessStarted()
     this.hasReadColumnsCount = false
     this.totalColumns = columnsCount
@@ -227,13 +226,13 @@ class MySQLPacketDecoder(charset: Charset, connectionId: String) extends ByteToM
     this.processingParams = false
   }
 
-  def queryProcessStarted() {
+  def queryProcessStarted(): Unit = {
     this.isInQuery = true
     this.processingColumns = true
     this.hasReadColumnsCount = false
   }
 
-  private def clear() {
+  private def clear(): Unit = {
     this.isPreparedStatementPrepare = false
     this.isPreparedStatementExecute = false
     this.isPreparedStatementExecuteRows = false

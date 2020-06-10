@@ -1,8 +1,9 @@
-package com.dingcloud.dts.binlog.event.impl;
+package com.fan.mysql.event.impl;
 
-import com.dingcloud.dts.binlog.event.AbstractEvent;
-import com.dingcloud.dts.binlog.event.EventHeader;
-import com.dingcloud.dts.binlog.parser.QueryEventParser.StatusVariable;
+
+import com.fan.mysql.event.AbstractEvent;
+import com.fan.mysql.event.EventHeader;
+import com.fan.mysql.parser.QueryEventParser;
 
 public class QueryEvent extends AbstractEvent {
 
@@ -11,7 +12,7 @@ public class QueryEvent extends AbstractEvent {
 	private int databaseLength;
 	private int errorCode;
 	private int statusVariablesLength;
-	private StatusVariable statusVariables;
+	private QueryEventParser.StatusVariable statusVariables;
 	private String databaseName;
 	private String query;
 
@@ -59,11 +60,11 @@ public class QueryEvent extends AbstractEvent {
 		this.statusVariablesLength = statusVariablesLength;
 	}
 
-	public StatusVariable getStatusVariables() {
+	public QueryEventParser.StatusVariable getStatusVariables() {
 		return statusVariables;
 	}
 
-	public void setStatusVariables(StatusVariable statusVariables) {
+	public void setStatusVariables(QueryEventParser.StatusVariable statusVariables) {
 		this.statusVariables = statusVariables;
 	}
 

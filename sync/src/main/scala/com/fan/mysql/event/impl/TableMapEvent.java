@@ -1,9 +1,9 @@
-package com.dingcloud.dts.binlog.event.impl;
+package com.fan.mysql.event.impl;
+
+import com.fan.mysql.event.AbstractEvent;
+import com.fan.mysql.event.EventHeader;
 
 import java.util.BitSet;
-
-import com.dingcloud.dts.binlog.event.AbstractEvent;
-import com.dingcloud.dts.binlog.event.EventHeader;
 
 public class TableMapEvent extends AbstractEvent {
 

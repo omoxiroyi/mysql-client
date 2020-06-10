@@ -1,14 +1,14 @@
-package com.dingcloud.dts.binlog.parser;
+package com.fan.mysql.parser;
 
+
+import com.fan.mysql.binlog.BinlogEventParser;
+import com.fan.mysql.dbsync.BinlogContext;
+import com.fan.mysql.dbsync.LogBuffer;
+import com.fan.mysql.event.BinlogEvent;
+import com.fan.mysql.event.EventHeader;
+import com.fan.mysql.event.impl.FormatDescriptionEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.dingcloud.dts.binlog.BinlogEventParser;
-import com.dingcloud.dts.binlog.event.BinlogEvent;
-import com.dingcloud.dts.binlog.event.EventHeader;
-import com.dingcloud.dts.binlog.event.impl.FormatDescriptionEvent;
-import com.dingcloud.dts.binlog.mysql.dbsync.BinlogContext;
-import com.dingcloud.dts.binlog.mysql.dbsync.LogBuffer;
 
 /*
  * ---------------------------------------------
@@ -84,7 +84,7 @@ public class FormatDescriptionEventParser implements BinlogEventParser {
 			for (int i = 0; i <= 2; i++) {
 				String str = split[i];
 				for (j = 0; j < str.length(); j++) {
-					if (Character.isDigit(str.charAt(j)) == false) {
+					if (!Character.isDigit(str.charAt(j))) {
 						break;
 					}
 				}

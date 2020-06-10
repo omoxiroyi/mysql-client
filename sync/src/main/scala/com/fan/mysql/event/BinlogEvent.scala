@@ -1,5 +1,9 @@
 package com.fan.mysql.event
 
-class BinlogEvent {
+trait BinlogEvent {
+  def getEventHeader: EventHeader
 
+  def setOriginData(originData: Array[Byte]): Unit
+
+  def getOriginData: Array[Byte]
 }

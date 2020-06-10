@@ -1,11 +1,12 @@
-package com.dingcloud.dts.binlog.mysql.dbsync;
+package com.fan.mysql.dbsync;
+
+
+import com.fan.mysql.event.impl.FormatDescriptionEvent;
+import com.fan.mysql.event.impl.TableMapEvent;
+import com.fan.mysql.util.MySQLConstants;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import com.dingcloud.dts.binlog.event.impl.FormatDescriptionEvent;
-import com.dingcloud.dts.binlog.event.impl.TableMapEvent;
-import com.dingcloud.dts.binlog.util.MySQLConstants;
 
 public class BinlogContext {
 
@@ -15,7 +16,7 @@ public class BinlogContext {
 	private String binlogFileName;
 	private long binlogPosition;
 	private FormatDescriptionEvent formatDescription;
-	private final Map<Long, TableMapEvent> tableMapEvents = new HashMap<Long, TableMapEvent>();
+	private final Map<Long, TableMapEvent> tableMapEvents = new HashMap<>();
 
 	public BinlogContext() {
 		this.formatDescription = new FormatDescriptionEvent(MySQLConstants.BINLOG_CHECKSUM_ALG_OFF);

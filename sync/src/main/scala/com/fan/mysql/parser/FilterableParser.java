@@ -1,7 +1,8 @@
-package com.dingcloud.dts.binlog.parser;
+package com.fan.mysql.parser;
 
-import com.dingcloud.dts.binlog.BinlogEventFilter;
-import com.dingcloud.dts.binlog.BinlogEventParser;
+
+import com.fan.mysql.binlog.BinlogEventFilter;
+import com.fan.mysql.binlog.BinlogEventParser;
 
 public abstract class FilterableParser implements BinlogEventParser {
 

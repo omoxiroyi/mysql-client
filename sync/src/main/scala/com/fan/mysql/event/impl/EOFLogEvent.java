@@ -1,6 +1,7 @@
-package com.dingcloud.dts.binlog.event.impl;
+package com.fan.mysql.event.impl;
 
-import com.dingcloud.dts.binlog.event.AbstractEvent;
+
+import com.fan.mysql.event.AbstractEvent;
 
 public class EOFLogEvent extends AbstractEvent {
 

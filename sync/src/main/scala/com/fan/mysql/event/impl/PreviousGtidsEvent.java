@@ -1,22 +1,23 @@
-package com.dingcloud.dts.binlog.event.impl;
+package com.fan.mysql.event.impl;
 
-import com.dingcloud.dts.binlog.event.AbstractEvent;
-import com.dingcloud.dts.binlog.event.EventHeader;
+
+import com.fan.mysql.event.AbstractEvent;
+import com.fan.mysql.event.EventHeader;
 
 public class PreviousGtidsEvent extends AbstractEvent {
 
-	private String gtidSet;
+    private String gtidSet;
 
-	public PreviousGtidsEvent(EventHeader header) {
-		super(header);
-	}
+    public PreviousGtidsEvent(EventHeader header) {
+        super(header);
+    }
 
-	public String getGtidSet() {
-		return gtidSet;
-	}
+    public String getGtidSet() {
+        return gtidSet;
+    }
 
-	public void setGtidSet(String gtidSet) {
-		this.gtidSet = gtidSet;
-	}
+    public void setGtidSet(String gtidSet) {
+        this.gtidSet = gtidSet;
+    }
 
 }

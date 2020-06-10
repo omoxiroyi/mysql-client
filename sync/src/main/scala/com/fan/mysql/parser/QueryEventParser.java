@@ -1,17 +1,17 @@
-package com.dingcloud.dts.binlog.parser;
+package com.fan.mysql.parser;
 
-import java.math.BigInteger;
 
+import com.fan.mysql.binlog.BinlogEventParser;
+import com.fan.mysql.dbsync.BinlogContext;
+import com.fan.mysql.dbsync.LogBuffer;
+import com.fan.mysql.event.BinlogEvent;
+import com.fan.mysql.event.EventHeader;
+import com.fan.mysql.event.impl.QueryEvent;
+import com.fan.mysql.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.dingcloud.dts.binlog.BinlogEventParser;
-import com.dingcloud.dts.binlog.event.BinlogEvent;
-import com.dingcloud.dts.binlog.event.EventHeader;
-import com.dingcloud.dts.binlog.event.impl.QueryEvent;
-import com.dingcloud.dts.binlog.mysql.dbsync.BinlogContext;
-import com.dingcloud.dts.binlog.mysql.dbsync.LogBuffer;
-import com.dingcloud.dts.binlog.util.CharsetUtil;
+import java.math.BigInteger;
 
 public class QueryEventParser implements BinlogEventParser {
 
@@ -188,7 +188,7 @@ public class QueryEventParser implements BinlogEventParser {
 		return var;
 	}
 
-	public class StatusVariable {
+	public static class StatusVariable {
 
 		private long flags2;
 		private long sql_mode;

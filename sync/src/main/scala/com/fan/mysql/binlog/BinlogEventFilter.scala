@@ -1,5 +1,7 @@
 package com.fan.mysql.binlog
 
-class BinlogEventFilter {
+import com.fan.mysql.event.BinlogEvent
 
+trait BinlogEventFilter {
+  def accepts(event: BinlogEvent): Boolean
 }
