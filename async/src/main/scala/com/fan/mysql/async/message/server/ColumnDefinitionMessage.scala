@@ -1,5 +1,4 @@
 
-
 package com.fan.mysql.async.message.server
 
 import com.fan.mysql.async.binary.decoder.BinaryDecoder
@@ -32,6 +31,6 @@ case class ColumnDefinitionMessage(
     val columnTypeName = ColumnTypes.Mapping.getOrElse(columnType, columnType)
     val charsetName = CharsetMapper.DefaultCharsetsById.getOrElse(characterSet, characterSet)
 
-    s"${this.getClass.getSimpleName}(name=$name,columnType=${columnTypeName},table=$table,charset=$charsetName,decimals=$decimals})"
+    s"${this.getClass.getSimpleName}(name=$name,columnType=$columnTypeName,table=$table,charset=$charsetName,decimals=$decimals})"
   }
 }

@@ -2,10 +2,13 @@
 
 package com.fan.mysql.async.util
 
+import java.math.BigInteger
 import java.nio.charset.Charset
+import java.util
 
 import com.fan.mysql.async.exceptions.UnknownLengthException
 import io.netty.buffer.ByteBuf
+import io.netty.util.{ByteProcessor, CharsetUtil}
 
 import scala.language.implicitConversions
 
@@ -15,11 +18,18 @@ object ChannelWrapper {
   final val MySQL_NULL = 0xfb
   final val log = Log.get[ChannelWrapper]
 
+  final val BIGINT_MAX_VALUE: BigInt = BigInt("18446744073709551615")
 }
 
 class ChannelWrapper(val buffer: ByteBuf) extends AnyVal {
 
   import ChannelWrapper._
+
+  def readFixedASCIString(length: Int): String =
+    this.readFixedString(length, CharsetUtil.ISO_8859_1)
+
+  def readLengthASCIString(): String =
+    this.readLengthEncodedString(CharsetUtil.ISO_8859_1)
 
   def readFixedString(length: Int, charset: Charset): String = {
     val bytes = new Array[Byte](length)
@@ -61,6 +71,30 @@ class ChannelWrapper(val buffer: ByteBuf) extends AnyVal {
     (first & 0xff) | ((second & 0xff) << 8) | ((third & 0xff) << 16)
   }
 
+  def readUnsignedLong48(): Long = {
+    if (buffer.readableBytes() < 6)
+      throw new IllegalArgumentException(s"limit exceed: ${buffer.readerIndex() + 6}")
+
+    (buffer.readByte() & 0xff).asInstanceOf[Long] | ((buffer.readByte() & 0xff).asInstanceOf[Long] << 8) |
+      ((buffer.readByte() & 0xff).asInstanceOf[Long] << 16) | ((buffer.readByte() & 0xff).asInstanceOf[Long] << 24) |
+      ((buffer.readByte() & 0xff).asInstanceOf[Long] << 32) | ((buffer.readByte() & 0xff).asInstanceOf[Long] << 40)
+  }
+
+  def readUnsignedLong(): BigInt = {
+    val long64 = buffer.readLong()
+
+    if (long64 >= 0)
+      BigInt(long64)
+    else
+      BIGINT_MAX_VALUE + BigInteger.valueOf(1 + long64)
+  }
+
+  def readBitmap(len: Int): util.BitSet = {
+    val bitmap = new util.BitSet(len)
+    this.fillBitmap(bitmap, len, buffer)
+    bitmap
+  }
+
   def writeLength(length: Long): Unit = {
     if (length < 251) {
       buffer.writeByte(length.asInstanceOf[Byte])
@@ -97,6 +131,53 @@ class ChannelWrapper(val buffer: ByteBuf) extends AnyVal {
     val last = buffer.readByte()
 
     (first & 0xff) | ((last & 0xff) << 8)
+  }
+
+  def forward(len: Int): Unit = {
+    if (buffer.readableBytes() < len)
+      throw new IllegalArgumentException(s"limit exceed: ${buffer.readerIndex() + len}")
+
+    buffer.readerIndex(buffer.readerIndex() + len)
+  }
+
+  def fillBitmap(bitmap: util.BitSet, len: Int, buffer: ByteBuf): Unit = {
+    if (buffer.readerIndex() + ((len + 7) / 8) > buffer.writerIndex())
+      throw new IllegalArgumentException(s"limit exceed: ${buffer.readerIndex() + ((len + 7) / 8)}")
+
+    var bit = 0
+
+    val begin = buffer.writerIndex()
+
+    buffer.forEachByte(buffer.readerIndex(), len / 8, new ByteProcessor {
+      override def process(flag: Byte): Boolean = {
+        if (flag == 0) {
+          bit += 8
+          return true
+        }
+
+        if ((flag & 0x01) != 0)
+          bitmap.set(bit)
+        if ((flag & 0x02) != 0)
+          bitmap.set(bit + 1)
+        if ((flag & 0x04) != 0)
+          bitmap.set(bit + 2)
+        if ((flag & 0x08) != 0)
+          bitmap.set(bit + 3)
+        if ((flag & 0x10) != 0)
+          bitmap.set(bit + 4)
+        if ((flag & 0x20) != 0)
+          bitmap.set(bit + 5)
+        if ((flag & 0x40) != 0)
+          bitmap.set(bit + 6)
+        if ((flag & 0x80) != 0)
+          bitmap.set(bit + 7)
+
+        bit += 8
+        true
+      }
+    })
+
+    buffer.writerIndex(begin + len / 8)
   }
 
 

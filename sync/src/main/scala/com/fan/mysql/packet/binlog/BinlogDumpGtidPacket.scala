@@ -7,7 +7,7 @@ import com.fan.mysql.position.GtidSetPosition
 import com.fan.mysql.util.MySQLPacketBuffer
 
 object BinlogDumpGtidPacket {
-  val COM_BINLOG_DUMP_GTID: Byte = 0x1e
+  final val COM_BINLOG_DUMP_GTID: Byte = 0x1e
 }
 
 class BinlogDumpGtidPacket extends CommandPacket {
@@ -77,13 +77,11 @@ class BinlogDumpGtidPacket extends CommandPacket {
     val b: Array[Byte] = new Array[Byte](uuid.length / 2)
     var i: Int = 0
     var j: Int = 0
-    while ( {
-      j < uuid.length
-    }) {
+    while (j < uuid.length) {
       b({
         i += 1
         i - 1
-      }) = Integer.parseInt(uuid.charAt(j) + "" + uuid.charAt(j + 1), 16).toByte
+      }) = Integer.parseInt(s"${uuid.charAt(j)}${uuid.charAt(j + 1)}", 16).toByte
 
       j += 2
     }

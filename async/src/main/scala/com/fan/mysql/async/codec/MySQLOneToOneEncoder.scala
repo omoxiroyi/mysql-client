@@ -24,11 +24,13 @@ class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper)
   import MySQLOneToOneEncoder.log
 
   private[this] final val handshakeResponseEncoder = new HandshakeResponseEncoder(charset, charsetMapper)
-  private final val queryEncoder = new QueryMessageEncoder(charset)
-  private final val rowEncoder = new BinaryRowEncoder(charset)
-  private final val prepareEncoder = new PreparedStatementPrepareEncoder(charset)
-  private final val executeEncoder = new PreparedStatementExecuteEncoder(rowEncoder)
-  private final val authenticationSwitchEncoder = new AuthenticationSwitchResponseEncoder(charset)
+  private[this] final val queryEncoder = new QueryMessageEncoder(charset)
+  private[this] final val rowEncoder = new BinaryRowEncoder(charset)
+  private[this] final val prepareEncoder = new PreparedStatementPrepareEncoder(charset)
+  private[this] final val executeEncoder = new PreparedStatementExecuteEncoder(rowEncoder)
+  private[this] final val authenticationSwitchEncoder = new AuthenticationSwitchResponseEncoder(charset)
+  private[this] final val binlogDumpEncoder = new BinlogDumpMessageEncoder(charset)
+
 
   private[this] var sequence = 1
 
@@ -50,6 +52,9 @@ class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper)
       case ClientMessage.AuthSwitchResponse =>
         sequence += 1
         this.authenticationSwitchEncoder
+      case ClientMessage.BinlogDump =>
+        sequence = 0
+        this.binlogDumpEncoder
       case _ => throw new EncoderNotAvailableException(message)
     }
 

@@ -11,7 +11,12 @@ object Configuration {
   val DefaultCharset: Charset = CharsetUtil.UTF_8
 
   @deprecated("Use URLParser.DEFAULT.", since = "0.2.20")
-  val Default = new Configuration("root")
+  val Default = new Configuration(
+    "root",
+    "127.0.0.1",
+    3306,
+    null,
+    null)
 }
 
 /**
@@ -49,4 +54,14 @@ case class Configuration(
                           connectTimeout: Duration = 5.seconds,
                           testTimeout: Duration = 5.seconds,
                           queryTimeout: Option[Duration] = None
-                        )
+                        ) {
+
+  // convince for Java constructor
+  def this(username: String,
+           host: String,
+           port: Int,
+           password: String,
+           database: String) = {
+    this(username, host, port, Option(password), Option(database))
+  }
+}

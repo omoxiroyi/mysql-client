@@ -31,6 +31,7 @@ class MySQLPacketDecoder(charset: Charset, connectionId: String) extends ByteToM
   private[codec] var processingColumns = false
   private[codec] var processingParams = false
   private[codec] var isInQuery = false
+  private[codec] var isInDumping = false
   private[codec] var isPreparedStatementPrepare = false
   private[codec] var isPreparedStatementExecute = false
   private[codec] var isPreparedStatementExecuteRows = false
@@ -44,6 +45,9 @@ class MySQLPacketDecoder(charset: Charset, connectionId: String) extends ByteToM
   private[this] var hasReadColumnsCount = false
 
   def decode(ctx: ChannelHandlerContext, buffer: ByteBuf, out: java.util.List[Object]): Unit = {
+
+    // todo we can only handle packet < 16MB now. we should handle multi-packet here.
+
     if (buffer.readableBytes() > 4) {
 
       buffer.markReaderIndex()
@@ -73,7 +77,11 @@ class MySQLPacketDecoder(charset: Charset, connectionId: String) extends ByteToM
         slice.readByte()
 
         if (this.hasDoneHandshake) {
-          this.handleCommonFlow(messageType, slice, out)
+          if (!this.isInDumping) {
+            this.handleCommonFlow(messageType, slice, out)
+          } else {
+            this.handleBinlogEvent(messageType, slice, out)
+          }
         } else {
           val decoder = messageType match {
             case ServerMessage.Error =>
@@ -86,6 +94,22 @@ class MySQLPacketDecoder(charset: Charset, connectionId: String) extends ByteToM
       } else {
         buffer.resetReaderIndex()
       }
+
+    }
+  }
+
+  /**
+   * Apart from handleCommonFlow method to make code clear.
+   */
+  private def handleBinlogEvent(messageType: Byte, slice: ByteBuf, out: java.util.List[Object]): Unit = {
+    messageType match {
+      case ServerMessage.Error =>
+        this.clear()
+        this.errorDecoder
+      case ServerMessage.EOF =>
+        this.clear()
+        EOFMessageDecoder
+      case ServerMessage.Ok =>
 
     }
   }
@@ -164,9 +188,9 @@ class MySQLPacketDecoder(charset: Charset, connectionId: String) extends ByteToM
         case _ =>
       }
 
-      if (slice.readableBytes() != 0) {
+      /*if (slice.readableBytes() != 0) {
         throw new BufferNotFullyConsumedException(slice)
-      }
+      }*/
 
       if (result != null) {
         result match {
@@ -244,5 +268,7 @@ class MySQLPacketDecoder(charset: Charset, connectionId: String) extends ByteToM
     this.totalParams = 0
     this.processedParams = 0
     this.hasReadColumnsCount = false
+
+    this.isInDumping = false
   }
 }

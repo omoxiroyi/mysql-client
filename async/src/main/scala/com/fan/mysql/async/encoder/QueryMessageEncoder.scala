@@ -14,7 +14,9 @@ class QueryMessageEncoder(charset: Charset) extends MessageEncoder {
 
     val m = message.asInstanceOf[QueryMessage]
     val encodedQuery = m.query.getBytes(charset)
+
     val buffer = ByteBufferUtils.packetBuffer(4 + 1 + encodedQuery.length)
+
     buffer.writeByte(ClientMessage.Query)
     buffer.writeBytes(encodedQuery)
 

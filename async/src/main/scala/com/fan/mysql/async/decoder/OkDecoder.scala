@@ -12,7 +12,7 @@ class OkDecoder(charset: Charset) extends MessageDecoder {
 
   def decode(buffer: ByteBuf): ServerMessage = {
 
-    new OkMessage(
+    OkMessage(
       buffer.readBinaryLength,
       buffer.readBinaryLength,
       buffer.readShort(),

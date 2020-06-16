@@ -37,6 +37,7 @@ object ServerMessage {
   final val BinaryRow = 105
   final val PreparedStatementPrepareResponse = 106
 
+  final val BinlogEvent = 107
 }
 
 class ServerMessage(val kind: Int) extends KindedMessage

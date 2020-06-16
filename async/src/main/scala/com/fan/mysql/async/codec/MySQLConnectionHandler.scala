@@ -183,6 +183,15 @@ class MySQLConnectionHandler(
     }
   }
 
+  def write(message: BinlogDumpMessage): ChannelFuture = {
+    decoder.isInDumping = true
+    writeAndHandleError(message)
+  }
+
+  def write(message: BinlogDumpGTIDMessage): ChannelFuture = {
+    writeAndHandleError(message)
+  }
+
   def write(message: HandshakeResponseMessage): ChannelFuture = {
     decoder.hasDoneHandshake = true
     writeAndHandleError(message)

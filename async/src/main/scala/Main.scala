@@ -18,12 +18,17 @@ object Main extends App with Logging {
   val conn = new MySQLConnection(conf)
 
   conn.connect.onComplete {
+    case Success(connection) =>
+      connection.dump("mysql-bin.000228:154")
+  }
+
+  /*conn.connect.onComplete {
     case Success(conn) =>
       conn.sendPreparedStatement("select * from user where id = ?", List(1)).onComplete {
         case Success(rs) =>
           println(rs.rows)
       }
-  }
+  }*/
 
-  Thread.sleep(10000)
+  Thread.sleep(10000000)
 }

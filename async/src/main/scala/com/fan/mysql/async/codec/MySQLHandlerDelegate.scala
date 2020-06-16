@@ -22,5 +22,4 @@ trait MySQLHandlerDelegate {
 
   def switchAuthentication(message: AuthenticationSwitchRequest)
 
-
 }

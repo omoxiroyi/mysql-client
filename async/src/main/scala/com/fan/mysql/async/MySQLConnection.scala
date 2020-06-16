@@ -5,12 +5,13 @@ import java.util.concurrent.atomic.{AtomicLong, AtomicReference}
 import com.fan.mysql.async.codec.{MySQLConnectionHandler, MySQLHandlerDelegate}
 import com.fan.mysql.async.db._
 import com.fan.mysql.async.exceptions.{ConnectionStillRunningQueryException, DatabaseException, InsufficientParametersException, MySQLException}
-import com.fan.mysql.async.message.client.{AuthenticationSwitchResponse, HandshakeResponseMessage, QueryMessage, QuitMessage}
+import com.fan.mysql.async.message.client._
 import com.fan.mysql.async.message.server._
 import com.fan.mysql.async.pool.TimeoutScheduler
 import com.fan.mysql.async.util.ChannelFutureTransformer._
 import com.fan.mysql.async.util.{CharsetMapper, ExecutorServiceUtils, Log, NettyUtils}
 import io.netty.channel.{ChannelHandlerContext, EventLoopGroup}
+import org.apache.commons.lang3.StringUtils
 import org.slf4j.Logger
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
@@ -28,15 +29,18 @@ class MySQLConnection(
                        implicit val executionContext: ExecutionContext = ExecutorServiceUtils.CachedExecutionContext
                      ) extends MySQLHandlerDelegate with Connection with TimeoutScheduler {
 
+  // Java constructor
+  def this(configuration: Configuration) = this(configuration, CharsetMapper.Instance)
+
   import MySQLConnection.log
 
   // validate that this charset is supported
   charsetMapper.toInt(configuration.charset)
 
-  private final val connectionCount = MySQLConnection.Counter.incrementAndGet()
-  private final val connectionId = s"[mysql-connection-$connectionCount]"
+  private[this] final val connectionCount = MySQLConnection.Counter.incrementAndGet()
+  private[this] final val connectionId = s"[mysql-connection-$connectionCount]"
 
-  private final val connectionHandler = new MySQLConnectionHandler(
+  private[this] final val connectionHandler = new MySQLConnectionHandler(
     configuration,
     charsetMapper,
     this,
@@ -44,13 +48,15 @@ class MySQLConnection(
     executionContext,
     connectionId)
 
-  private final val connectionPromise = Promise[Connection]()
-  private final val disconnectionPromise = Promise[Connection]()
+  private[this] final val connectionPromise = Promise[Connection]()
+  private[this] final val disconnectionPromise = Promise[Connection]()
 
-  private val queryPromiseReference = new AtomicReference[Option[Promise[QueryResult]]](None)
-  private var connected = false
-  private var _lastException: Throwable = _
-  private var serverVersion: String = _
+  private[this] val queryPromiseReference = new AtomicReference[Option[Promise[QueryResult]]](None)
+  private[this] var connected = false
+  private[this] var _lastException: Throwable = _
+  private[this] var serverVersion: String = _
+
+  private[this] var slaveId = 123456
 
   def version: String = this.serverVersion
 
@@ -163,6 +169,32 @@ class MySQLConnection(
 
   override def switchAuthentication(message: AuthenticationSwitchRequest): Unit = {
     this.connectionHandler.write(AuthenticationSwitchResponse(configuration.password, message))
+  }
+
+  def dump(dumpString: String): Unit = {
+    this.validateIsReadyForQuery()
+    log.info(s"COM_BINLOG_DUMP with position: $dumpString")
+
+    // todo we don't check set statement result here, we have to check it.
+    for {
+      _ <- this.sendQuery("set wait_timeout=9999999")
+      _ <- this.sendQuery("set net_write_timeout=1800")
+      _ <- this.sendQuery("set net_read_timeout=1800")
+      _ <- this.sendQuery("set names 'binary'")
+      _ <- this.sendQuery("set @master_binlog_checksum= @@global.binlog_checksum")
+    } yield {
+      // todo we should provide two api to distinguish between dump file and dump gtid.
+      if (StringUtils.isEmpty(dumpString)) {
+        this.connectionHandler.write(BinlogDumpMessage("", 4, this.slaveId))
+      } else if (dumpString.contains(".") && dumpString.contains(":")) {
+        val splits = dumpString.split(":")
+        this.connectionHandler.write(BinlogDumpMessage(splits(0), splits(1).toInt, this.slaveId))
+      } else {
+        this.connectionHandler.write(BinlogDumpGTIDMessage("", 4, dumpString, this.slaveId))
+      }
+    }
+
+    // todo finish dump promise at here. return a Future which wrap a binlog event channel.
   }
 
   def sendQuery(query: String): Future[QueryResult] = {
