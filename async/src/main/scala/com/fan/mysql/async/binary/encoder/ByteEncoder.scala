@@ -7,7 +7,7 @@ import io.netty.buffer.ByteBuf
 
 object ByteEncoder extends BinaryEncoder {
 
-  def encode(value: Any, buffer: ByteBuf):Unit = {
+  def encode(value: Any, buffer: ByteBuf): Unit = {
     buffer.writeByte(value.asInstanceOf[Byte])
   }
 

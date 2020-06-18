@@ -3,12 +3,18 @@ package com.fan.mysql.async.binlog.event.impl
 import java.util
 
 import com.fan.mysql.async.binlog.event.{AbstractEvent, EventHeader}
+import org.apache.commons.lang3.builder.{ToStringBuilder, ToStringStyle}
 
 object TableMapEvent {
+
   final class ColumnInfo {
     var `type` = 0
     var meta = 0
+
+    override def toString: String =
+      ToStringBuilder.reflectionToString(this, ToStringStyle.DEFAULT_STYLE)
   }
+
 }
 
 class TableMapEvent(header: EventHeader) extends AbstractEvent(header) {

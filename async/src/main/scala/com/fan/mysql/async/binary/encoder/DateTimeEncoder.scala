@@ -7,7 +7,7 @@ import io.netty.buffer.ByteBuf
 import org.joda.time._
 
 object DateTimeEncoder extends BinaryEncoder {
-  def encode(value: Any, buffer: ByteBuf):Unit = {
+  def encode(value: Any, buffer: ByteBuf): Unit = {
     val instant = value.asInstanceOf[ReadableDateTime]
 
     LocalDateTimeEncoder.encode(new LocalDateTime(instant.getMillis), buffer)

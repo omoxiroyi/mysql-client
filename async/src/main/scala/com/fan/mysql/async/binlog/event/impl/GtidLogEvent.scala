@@ -2,7 +2,7 @@ package com.fan.mysql.async.binlog.event.impl
 
 import com.fan.mysql.async.binlog.event.{AbstractEvent, EventHeader}
 
-class GtidEvent(header: EventHeader) extends AbstractEvent(header) {
+class GtidLogEvent(header: EventHeader) extends AbstractEvent(header) {
   private[this] var sourceId: Array[Byte] = _
   private[this] var transactionId = 0L
   private[this] var logicalTimestamp = 0

@@ -6,7 +6,7 @@ import io.netty.buffer.ByteBuf
 
 
 object ByteBufEncoder extends BinaryEncoder {
-  def encode(value: Any, buffer: ByteBuf):Unit = {
+  def encode(value: Any, buffer: ByteBuf): Unit = {
     val bytes = value.asInstanceOf[ByteBuf]
 
     buffer.writeLength(bytes.readableBytes())

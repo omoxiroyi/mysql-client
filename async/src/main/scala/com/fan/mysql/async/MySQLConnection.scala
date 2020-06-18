@@ -2,6 +2,7 @@ package com.fan.mysql.async
 
 import java.util.concurrent.atomic.{AtomicLong, AtomicReference}
 
+import com.fan.mysql.async.binlog.BinlogDumpContext
 import com.fan.mysql.async.codec.{MySQLConnectionHandler, MySQLHandlerDelegate}
 import com.fan.mysql.async.db._
 import com.fan.mysql.async.exceptions.{ConnectionStillRunningQueryException, DatabaseException, InsufficientParametersException, MySQLException}
@@ -9,13 +10,13 @@ import com.fan.mysql.async.message.client._
 import com.fan.mysql.async.message.server._
 import com.fan.mysql.async.pool.TimeoutScheduler
 import com.fan.mysql.async.util.ChannelFutureTransformer._
-import com.fan.mysql.async.util.{CharsetMapper, ExecutorServiceUtils, Log, NettyUtils}
+import com.fan.mysql.async.util._
 import io.netty.channel.{ChannelHandlerContext, EventLoopGroup}
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.Logger
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Random, Success}
 
 object MySQLConnection {
   final val Counter: AtomicLong = new AtomicLong()
@@ -56,7 +57,9 @@ class MySQLConnection(
   private[this] var _lastException: Throwable = _
   private[this] var serverVersion: String = _
 
-  private[this] var slaveId = 123456
+  private[this] val slaveId = math.abs(Random.nextLong(99999999)) + 1
+
+  private[this] val timeZone = "GMT-0:00"
 
   def version: String = this.serverVersion
 
@@ -173,6 +176,7 @@ class MySQLConnection(
 
   def dump(dumpString: String): Unit = {
     this.validateIsReadyForQuery()
+
     log.info(s"COM_BINLOG_DUMP with position: $dumpString")
 
     // todo we don't check set statement result here, we have to check it.
@@ -182,16 +186,30 @@ class MySQLConnection(
       _ <- this.sendQuery("set net_read_timeout=1800")
       _ <- this.sendQuery("set names 'binary'")
       _ <- this.sendQuery("set @master_binlog_checksum= @@global.binlog_checksum")
+      checksumType <- this.sendQuery("select @master_binlog_checksum")
     } yield {
+
+      val dumpContext = checksumType.rows.map(_.apply(0).apply(0)) match {
+        case None => new BinlogDumpContext(MySQLConstants.BINLOG_CHECKSUM_ALG_OFF)
+        case Some(a: String) if a == "CRC32" =>
+          log.debug(s"Dump binlog checksum type is CRC32")
+          new BinlogDumpContext(MySQLConstants.BINLOG_CHECKSUM_ALG_CRC32)
+        case _ => new BinlogDumpContext(MySQLConstants.BINLOG_CHECKSUM_ALG_OFF)
+      }
+
+      dumpContext.setTimeZone(timeZone)
+
       // todo we should provide two api to distinguish between dump file and dump gtid.
       if (StringUtils.isEmpty(dumpString)) {
-        this.connectionHandler.write(BinlogDumpMessage("", 4, this.slaveId))
+        this.connectionHandler.write(
+          BinlogDumpMessage("", 4, this.slaveId), dumpContext)
       } else if (dumpString.contains(".") && dumpString.contains(":")) {
         val splits = dumpString.split(":")
-        this.connectionHandler.write(BinlogDumpMessage(splits(0), splits(1).toInt, this.slaveId))
+        this.connectionHandler.write(BinlogDumpMessage(splits(0), splits(1).toInt, this.slaveId), dumpContext)
       } else {
-        this.connectionHandler.write(BinlogDumpGTIDMessage("", 4, dumpString, this.slaveId))
+        this.connectionHandler.write(BinlogDumpGTIDMessage("", 4, dumpString, this.slaveId), dumpContext)
       }
+
     }
 
     // todo finish dump promise at here. return a Future which wrap a binlog event channel.

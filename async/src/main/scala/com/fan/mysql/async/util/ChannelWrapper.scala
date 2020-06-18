@@ -71,6 +71,15 @@ class ChannelWrapper(val buffer: ByteBuf) extends AnyVal {
     (first & 0xff) | ((second & 0xff) << 8) | ((third & 0xff) << 16)
   }
 
+  def readUnsignedLong40LE(): Long = {
+    if (buffer.readableBytes() < 6)
+      throw new IllegalArgumentException(s"limit exceed: ${buffer.readerIndex() + 6}")
+
+    ((buffer.readByte() & 0xff).asInstanceOf[Long] << 32) |
+      ((buffer.readByte() & 0xff).asInstanceOf[Long] << 24) | ((buffer.readByte() & 0xff).asInstanceOf[Long] << 16) |
+      ((buffer.readByte() & 0xff).asInstanceOf[Long] << 8) | (buffer.readByte() & 0xff).asInstanceOf[Long]
+  }
+
   def readUnsignedLong48(): Long = {
     if (buffer.readableBytes() < 6)
       throw new IllegalArgumentException(s"limit exceed: ${buffer.readerIndex() + 6}")
@@ -78,6 +87,15 @@ class ChannelWrapper(val buffer: ByteBuf) extends AnyVal {
     (buffer.readByte() & 0xff).asInstanceOf[Long] | ((buffer.readByte() & 0xff).asInstanceOf[Long] << 8) |
       ((buffer.readByte() & 0xff).asInstanceOf[Long] << 16) | ((buffer.readByte() & 0xff).asInstanceOf[Long] << 24) |
       ((buffer.readByte() & 0xff).asInstanceOf[Long] << 32) | ((buffer.readByte() & 0xff).asInstanceOf[Long] << 40)
+  }
+
+  def readUnsignedLong48LE(): Long = {
+    if (buffer.readableBytes() < 6)
+      throw new IllegalArgumentException(s"limit exceed: ${buffer.readerIndex() + 6}")
+
+    ((buffer.readByte() & 0xff).asInstanceOf[Long] << 40) | ((buffer.readByte() & 0xff).asInstanceOf[Long] << 32) |
+      ((buffer.readByte() & 0xff).asInstanceOf[Long] << 24) | ((buffer.readByte() & 0xff).asInstanceOf[Long] << 16) |
+      ((buffer.readByte() & 0xff).asInstanceOf[Long] << 8) | (buffer.readByte() & 0xff).asInstanceOf[Long]
   }
 
   def readUnsignedLong(): BigInt = {
@@ -180,5 +198,16 @@ class ChannelWrapper(val buffer: ByteBuf) extends AnyVal {
     buffer.writerIndex(begin + len / 8)
   }
 
+  def fillBytes(dest: Array[Byte], destPos: Int, len: Int): Unit = {
+    if (buffer.readerIndex() + len > buffer.writerIndex())
+      throw new IllegalArgumentException(s"limit exceed: ${buffer.readerIndex() + len}")
 
+    System.arraycopy(buffer.readBytes(len).array(), 0, dest, destPos, len)
+  }
+
+  def toArray(): Array[Byte] = {
+    val arr = new Array[Byte](buffer.readableBytes())
+    buffer.readBytes(arr)
+    arr
+  }
 }

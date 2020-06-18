@@ -119,6 +119,7 @@ trait Connection {
 
   /**
    * Dump binary log from mysql server.
+   *
    * @param dumpString binlog position or gtid potion to start dump
    */
   def dump(dumpString: String): Unit

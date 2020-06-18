@@ -7,7 +7,7 @@ import io.netty.buffer.ByteBuf
 import org.joda.time.LocalDate
 
 object LocalDateEncoder extends BinaryEncoder {
-  def encode(value: Any, buffer: ByteBuf):Unit = {
+  def encode(value: Any, buffer: ByteBuf): Unit = {
     val date = value.asInstanceOf[LocalDate]
 
     buffer.writeByte(4)

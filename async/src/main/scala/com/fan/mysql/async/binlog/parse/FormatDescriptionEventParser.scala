@@ -81,7 +81,7 @@ class FormatDescriptionEventParser extends BinlogEventParser with Logging {
 
     val postHeaderLen = new Array[Short](numberOfEventTypes)
 
-    (0 to numberOfEventTypes).foreach(i => postHeaderLen(i) = buffer.readUnsignedByte())
+    (0 until numberOfEventTypes).foreach(i => postHeaderLen(i) = buffer.readUnsignedByte())
 
     event.setBinlogVersion(binlogVersion)
     event.setServerVersion(serverVersion)

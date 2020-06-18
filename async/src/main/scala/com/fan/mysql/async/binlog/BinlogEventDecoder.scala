@@ -1,7 +1,7 @@
 package com.fan.mysql.async.binlog
 
-import com.fan.mysql.async.binlog.event.{BinlogEvent, EventHeader}
-import com.fan.mysql.async.binlog.parse.{FormatDescriptionEventParser, GtidEventParser, PreviousGtidsParser, QueryEventParser, RotateEventParser, RowDataEventParser, TableMapEventParser, XidEventParser}
+import com.fan.mysql.async.binlog.event.{BinlogEvent, DefaultEvent, EventHeader}
+import com.fan.mysql.async.binlog.parse._
 import com.fan.mysql.async.decoder.MessageDecoder
 import com.fan.mysql.async.exceptions.BinlogParseException
 import com.fan.mysql.async.message.server.ServerMessage
@@ -28,6 +28,8 @@ class BinlogEventDecoder(context: BinlogDumpContext) extends MessageDecoder {
 
     parseSemiSyncHeader(buffer)
 
+    val start = buffer.readerIndex()
+
     val bufferRemain = buffer.readableBytes()
 
     if (bufferRemain >= LOG_EVENT_HEADER_LEN) {
@@ -37,7 +39,14 @@ class BinlogEventDecoder(context: BinlogDumpContext) extends MessageDecoder {
 
       if (bufferRemain >= header.eventLength) {
         // parse body
+        val parser = getEventParser(header.eventType)
+        if (parser != null) event = parser.parse(buffer, header, context)
+        else event = new DefaultEvent(header)
 
+        // set origin data
+        buffer.readerIndex(start)
+        event.setOriginData(buffer.toArray())
+        return event
       }
     }
 
@@ -78,19 +87,21 @@ class BinlogEventDecoder(context: BinlogDumpContext) extends MessageDecoder {
       FormatDescriptionEventParser.doServerVersionSplit(serverVersion, versionSplit)
       checksumAlg = MySQLConstants.BINLOG_CHECKSUM_ALG_UNDEF
 
-      // we don't handle START_EVENT_V3 start event here.
       if (FormatDescriptionEventParser.versionProduct(versionSplit) >= FormatDescriptionEventParser.checksumVersionProduct) {
         buffer.readerIndex(headerPos + (eventLength - MySQLConstants.BINLOG_CHECKSUM_LEN - MySQLConstants.BINLOG_CHECKSUM_ALG_DESC_LEN).toInt)
         checksumAlg = buffer.readUnsignedByte().asInstanceOf[Int]
-      } else {
-        checksumAlg = context.getFormatDescription.getEventHeader.checksumAlg
       }
+    } // we don't handle START_EVENT_V3 start event here.
+    else {
+      checksumAlg = context.getFormatDescription.getEventHeader.checksumAlg
+    }
 
-      buffer.readerIndex(headerPos + LOG_EVENT_HEADER_LEN)
+    buffer.readerIndex(headerPos + LOG_EVENT_HEADER_LEN)
 
-      if (checksumAlg != MySQLConstants.BINLOG_CHECKSUM_ALG_UNDEF && (eventType == MySQLConstants.FORMAT_DESCRIPTION_EVENT || checksumAlg != MySQLConstants.BINLOG_CHECKSUM_ALG_OFF)) {
-        buffer.writerIndex(buffer.writerIndex() - MySQLConstants.BINLOG_CHECKSUM_LEN)
-      }
+    if (checksumAlg != MySQLConstants.BINLOG_CHECKSUM_ALG_UNDEF
+      && (eventType == MySQLConstants.FORMAT_DESCRIPTION_EVENT
+      || checksumAlg != MySQLConstants.BINLOG_CHECKSUM_ALG_OFF)) {
+      buffer.writerIndex(buffer.writerIndex() - MySQLConstants.BINLOG_CHECKSUM_LEN)
     }
 
     EventHeader(
@@ -130,12 +141,12 @@ class BinlogEventDecoder(context: BinlogDumpContext) extends MessageDecoder {
         tableMapParser.setFilter(filter)
 
 
-      case MySQLConstants.DELETE_ROWS_EVENT =>
-      case MySQLConstants.DELETE_ROWS_EVENT_V1 =>
-      case MySQLConstants.UPDATE_ROWS_EVENT =>
-      case MySQLConstants.UPDATE_ROWS_EVENT_V1 =>
-      case MySQLConstants.WRITE_ROWS_EVENT =>
-      case MySQLConstants.WRITE_ROWS_EVENT_V1 =>
+      case MySQLConstants.DELETE_ROWS_EVENT
+           | MySQLConstants.DELETE_ROWS_EVENT_V1
+           | MySQLConstants.UPDATE_ROWS_EVENT
+           | MySQLConstants.UPDATE_ROWS_EVENT_V1
+           | MySQLConstants.WRITE_ROWS_EVENT
+           | MySQLConstants.WRITE_ROWS_EVENT_V1 =>
         parser = new RowDataEventParser
 
 

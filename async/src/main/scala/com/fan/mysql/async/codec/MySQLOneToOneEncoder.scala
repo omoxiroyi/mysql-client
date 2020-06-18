@@ -30,6 +30,7 @@ class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper)
   private[this] final val executeEncoder = new PreparedStatementExecuteEncoder(rowEncoder)
   private[this] final val authenticationSwitchEncoder = new AuthenticationSwitchResponseEncoder(charset)
   private[this] final val binlogDumpEncoder = new BinlogDumpMessageEncoder(charset)
+  private[this] final val binlogDumpGTIDEncoder = new BinlogDumpGTIDMessageEncoder(charset)
 
 
   private[this] var sequence = 1
@@ -55,6 +56,9 @@ class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper)
       case ClientMessage.BinlogDump =>
         sequence = 0
         this.binlogDumpEncoder
+      case ClientMessage.BinlogDumpGTID =>
+        sequence = 0
+        this.binlogDumpGTIDEncoder
       case _ => throw new EncoderNotAvailableException(message)
     }
 

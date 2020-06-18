@@ -7,7 +7,7 @@ import io.netty.buffer.ByteBuf
 import org.joda.time.LocalTime
 
 object LocalTimeEncoder extends BinaryEncoder {
-  def encode(value: Any, buffer: ByteBuf):Unit = {
+  def encode(value: Any, buffer: ByteBuf): Unit = {
     val time = value.asInstanceOf[LocalTime]
 
     val hasMillis = time.getMillisOfSecond != 0

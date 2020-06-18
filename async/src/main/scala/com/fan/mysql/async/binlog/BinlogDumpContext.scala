@@ -15,7 +15,7 @@ class BinlogDumpContext() {
 
   private[this] val tableMapEvents = new util.HashMap[Long, TableMapEvent]
 
-  def this(binlogChecksum: Int) {
+  def this(binlogChecksum: Int) = {
     this()
     this.formatDescription = new FormatDescriptionEvent(binlogChecksum)
   }

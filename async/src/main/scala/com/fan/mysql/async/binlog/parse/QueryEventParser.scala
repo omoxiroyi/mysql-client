@@ -9,6 +9,7 @@ import com.fan.mysql.async.util.ChannelWrapper._
 import com.fan.mysql.async.util.Log.Logging
 import com.fan.mysql.async.util.MySQLCharsetUtil
 import io.netty.buffer.ByteBuf
+import org.apache.commons.lang3.builder.{ToStringBuilder, ToStringStyle}
 
 object QueryEventParser {
   /**
@@ -110,6 +111,9 @@ object QueryEventParser {
     def getExplicitDefaultsForTimestamp: Int = explicitDefaultsForTimestamp
 
     def getDdlXid: Long = ddlXid
+
+    override def toString: String =
+      ToStringBuilder.reflectionToString(this, ToStringStyle.DEFAULT_STYLE)
   }
 
 }

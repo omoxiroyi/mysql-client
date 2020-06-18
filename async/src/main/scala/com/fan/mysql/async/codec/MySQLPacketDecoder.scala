@@ -3,6 +3,8 @@ package com.fan.mysql.async.codec
 import java.nio.charset.Charset
 import java.util.concurrent.atomic.AtomicInteger
 
+import com.fan.mysql.async.binlog.event.BinlogEvent
+import com.fan.mysql.async.binlog.{BinlogDumpContext, BinlogEventDecoder}
 import com.fan.mysql.async.decoder._
 import com.fan.mysql.async.exceptions.{BufferNotFullyConsumedException, NegativeMessageSizeException, ParserNotAvailableException}
 import com.fan.mysql.async.message.server._
@@ -41,6 +43,10 @@ class MySQLPacketDecoder(charset: Charset, connectionId: String) extends ByteToM
   private[codec] var processedParams = 0L
   private[codec] var totalColumns = 0L
   private[codec] var processedColumns = 0L
+
+  private[codec] var BinlogContext: BinlogDumpContext = _
+
+  private[codec] var BinlogEventDecoder: BinlogEventDecoder = _
 
   private[this] var hasReadColumnsCount = false
 
@@ -102,7 +108,7 @@ class MySQLPacketDecoder(charset: Charset, connectionId: String) extends ByteToM
    * Apart from handleCommonFlow method to make code clear.
    */
   private def handleBinlogEvent(messageType: Byte, slice: ByteBuf, out: java.util.List[Object]): Unit = {
-    messageType match {
+    val decoder = messageType match {
       case ServerMessage.Error =>
         this.clear()
         this.errorDecoder
@@ -110,8 +116,20 @@ class MySQLPacketDecoder(charset: Charset, connectionId: String) extends ByteToM
         this.clear()
         EOFMessageDecoder
       case ServerMessage.Ok =>
-
+        BinlogEventDecoder
     }
+
+    val msg = decoder.decode(slice)
+
+    msg match {
+      case event: BinlogEvent =>
+        log.debug(s"Receive a binlog event.\n$event\n")
+      case null =>
+        log.debug(s"Receive a null event")
+      case error: ErrorMessage =>
+        log.error(s"Dump gtid error: $error")
+    }
+
   }
 
   private def handleCommonFlow(messageType: Byte, slice: ByteBuf, out: java.util.List[Object]): Unit = {

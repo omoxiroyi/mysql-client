@@ -13,6 +13,13 @@ public class BufferDumper {
         buffer.readBytes(byteBuffer);
         buffer.resetReaderIndex();
 
+        return dumpArrayAsHex(byteBuffer);
+    }
+
+    public static String dumpArrayAsHex(byte[] byteBuffer) {
+
+        int length = byteBuffer.length;
+
         StringBuilder outputBuf = new StringBuilder(length * 4);
 
         int p = 0;
@@ -87,5 +94,4 @@ public class BufferDumper {
 
         return outputBuf.toString();
     }
-
 }

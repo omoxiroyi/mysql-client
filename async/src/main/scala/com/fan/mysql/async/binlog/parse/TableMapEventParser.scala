@@ -5,9 +5,9 @@ import java.util
 import com.fan.mysql.async.binlog.BinlogDumpContext
 import com.fan.mysql.async.binlog.event.impl.TableMapEvent
 import com.fan.mysql.async.binlog.event.{BinlogEvent, DefaultEvent, EventHeader}
+import com.fan.mysql.async.util.ChannelWrapper._
 import com.fan.mysql.async.util.Log.Logging
 import com.fan.mysql.async.util.MySQLConstants
-import com.fan.mysql.async.util.ChannelWrapper._
 import io.netty.buffer.ByteBuf
 
 class TableMapEventParser extends FilterableParser with Logging {

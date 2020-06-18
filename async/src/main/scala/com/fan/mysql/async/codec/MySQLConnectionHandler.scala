@@ -4,6 +4,7 @@ import java.net.InetSocketAddress
 import java.nio.ByteBuffer
 
 import com.fan.mysql.async.binary.BinaryRowDecoder
+import com.fan.mysql.async.binlog.{BinlogDumpContext, BinlogEventDecoder}
 import com.fan.mysql.async.db.Configuration
 import com.fan.mysql.async.exceptions.DatabaseException
 import com.fan.mysql.async.general.MutableResultSet
@@ -183,12 +184,17 @@ class MySQLConnectionHandler(
     }
   }
 
-  def write(message: BinlogDumpMessage): ChannelFuture = {
+  def write(message: BinlogDumpMessage, binlogDumpContext: BinlogDumpContext): ChannelFuture = {
+    decoder.BinlogContext = binlogDumpContext
+    decoder.BinlogEventDecoder = new BinlogEventDecoder(binlogDumpContext)
     decoder.isInDumping = true
     writeAndHandleError(message)
   }
 
-  def write(message: BinlogDumpGTIDMessage): ChannelFuture = {
+  def write(message: BinlogDumpGTIDMessage, binlogDumpContext: BinlogDumpContext): ChannelFuture = {
+    decoder.BinlogContext = binlogDumpContext
+    decoder.BinlogEventDecoder = new BinlogEventDecoder(binlogDumpContext)
+    decoder.isInDumping = true
     writeAndHandleError(message)
   }
 
@@ -229,6 +235,7 @@ class MySQLConnectionHandler(
       case (value, index) if isLong(value) => (None, Some(index, value))
       case (_, index) => (Some(index), None)
     }.unzip
+
     val nonLongIndices: Seq[Int] = nonLongIndicesOpt.flatten
     val longValues: Seq[(Int, Any)] = longValuesOpt.flatten
 
