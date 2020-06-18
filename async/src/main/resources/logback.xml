@@ -12,7 +12,7 @@
     <property name="appName" value="instance"/>
 
     <!-- 日志级别 -->
-    <property name="logLevel" value="TRACE"/>
+    <property name="logLevel" value="DEBUG"/>
 
     <!-- 日志地址 -->
     <property name="logPath" value="./logs"/>

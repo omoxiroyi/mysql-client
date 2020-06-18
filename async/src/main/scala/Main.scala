@@ -19,7 +19,7 @@ object Main extends App with Logging {
 
   conn.connect.onComplete {
     case Success(connection) =>
-      connection.dump("mysql-bin.000228:154")
+      connection.dump("5afad620-7695-11e7-a21d-ecf4bbea6648:161928552,b86a3f41-ece0-11e9-8197-246e9615a0d0:1,f01980ee-b0e0-11e9-afc1-c191932e2c51:1-44048")
   }
 
   /*conn.connect.onComplete {
