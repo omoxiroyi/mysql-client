@@ -121,15 +121,7 @@ class MySQLPacketDecoder(charset: Charset, connectionId: String) extends ByteToM
 
     val msg = decoder.decode(slice)
 
-    msg match {
-      case event: BinlogEvent =>
-        log.debug(s"Receive a binlog event.\n$event\n")
-      case null =>
-        log.debug(s"Receive a null event")
-      case error: ErrorMessage =>
-        log.error(s"Dump gtid error: $error")
-    }
-
+    out.add(msg)
   }
 
   private def handleCommonFlow(messageType: Byte, slice: ByteBuf, out: java.util.List[Object]): Unit = {

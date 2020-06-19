@@ -1,5 +1,6 @@
 package com.fan.mysql.async.codec
 
+import com.fan.mysql.async.binlog.event.BinlogEvent
 import com.fan.mysql.async.db.ResultSet
 import com.fan.mysql.async.message.server._
 import io.netty.channel.ChannelHandlerContext
@@ -8,7 +9,9 @@ trait MySQLHandlerDelegate {
 
   def onHandshake(message: HandshakeMessage)
 
-  def connected(ctx: ChannelHandlerContext)
+  def onConnect(ctx: ChannelHandlerContext)
+
+  def onDisconnect(ctx: ChannelHandlerContext)
 
   def exceptionCaught(exception: Throwable)
 
@@ -17,6 +20,8 @@ trait MySQLHandlerDelegate {
   def onError(message: ErrorMessage)
 
   def onEOF(message: EOFMessage)
+
+  def onEvent(message: BinlogEvent)
 
   def onResultSet(resultSet: ResultSet, message: EOFMessage)
 

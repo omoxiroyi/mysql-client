@@ -62,4 +62,7 @@ trait TimeoutScheduler {
     eventLoopGroup.schedule(new Runnable {
       override def run(): Unit = block
     }, duration.toMillis, TimeUnit.MILLISECONDS)
+
+  def scheduleAtFixedRate(block: => Unit, duration: Duration): ScheduledFuture[_] =
+    eventLoopGroup.scheduleAtFixedRate(() => block, duration.toMillis, duration.toMillis, TimeUnit.MILLISECONDS)
 }

@@ -4,6 +4,7 @@ import java.net.InetSocketAddress
 import java.nio.ByteBuffer
 
 import com.fan.mysql.async.binary.BinaryRowDecoder
+import com.fan.mysql.async.binlog.event.BinlogEvent
 import com.fan.mysql.async.binlog.{BinlogDumpContext, BinlogEventDecoder}
 import com.fan.mysql.async.db.Configuration
 import com.fan.mysql.async.exceptions.DatabaseException
@@ -126,19 +127,25 @@ class MySQLConnectionHandler(
           case ServerMessage.ParamProcessingFinished =>
           case ServerMessage.ParamAndColumnProcessingFinished =>
             this.onColumnDefinitionFinished()
+
+          case ServerMessage.BinlogEvent =>
+            handlerDelegate.onEvent(m.asInstanceOf[BinlogEvent])
         }
+
+      case null =>
     }
 
   }
 
   override def channelActive(ctx: ChannelHandlerContext): Unit = {
     log.debug("Channel became active")
-    handlerDelegate.connected(ctx)
+    handlerDelegate.onConnect(ctx)
   }
 
 
   override def channelInactive(ctx: ChannelHandlerContext): Unit = {
     log.debug("Channel became inactive")
+    handlerDelegate.onDisconnect(ctx)
   }
 
   //noinspection ScalaDeprecation
