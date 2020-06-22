@@ -1,10 +1,10 @@
 package com.fan.mysql.async
 
-import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.atomic.{AtomicLong, AtomicReference}
+import java.util.concurrent.{Executor, ScheduledFuture}
 
-import com.fan.mysql.async.binlog.BinlogDumpContext
 import com.fan.mysql.async.binlog.event.BinlogEvent
+import com.fan.mysql.async.binlog.{BinlogDumpContext, BinlogEventFilter, BinlogEventHandler}
 import com.fan.mysql.async.codec.{MySQLConnectionHandler, MySQLHandlerDelegate}
 import com.fan.mysql.async.db._
 import com.fan.mysql.async.exceptions._
@@ -64,6 +64,9 @@ class MySQLConnection(
   private[this] val heartbeatInterval = 10
   private[this] var heartBeatScheduler: ScheduledFuture[_] = _
   @volatile private[this] var lastEventReadTime = -1L
+  private[this] var eventHandler: BinlogEventHandler = _
+  private[this] var eventFilter: BinlogEventFilter = _
+  private[this] var eventHandlerExecutor: Executor = _
 
   def version: String = this.serverVersion
 
@@ -194,18 +197,30 @@ class MySQLConnection(
   override def onEvent(event: BinlogEvent): Unit = {
     this.lastEventReadTime = System.currentTimeMillis()
 
-    log.debug(s"Receive a binlog event.\n$event\n")
+    log.trace(s"Receive a binlog event.\n$event\n")
+
+    if (this.eventFilter != null && !this.eventFilter.accepts(event)) return
+
+    this.eventHandlerExecutor.execute(() => eventHandler.handle(event))
   }
 
-  def dump(dumpString: String): Unit = {
+  def dump(dumpString: String, filter: BinlogEventFilter, handler: BinlogEventHandler,
+           executor: Executor): Future[Connection] = {
     // todo check is dumping state as well
     this.validateIsReadyForQuery()
 
+    require(handler != null, "You must give a event handler to consume event")
+    require(executor != null, "You have to provide a ExecutionContext to handle event," +
+      " because we can not do any block operation in netty worker thread pool.")
+
+    this.eventHandler = handler
+    this.eventFilter = filter
+    this.eventHandlerExecutor = executor
+
     log.info(s"Start dump binlog with position: $dumpString")
 
-    // todo we don't check set statement result here, we have to check it before starting dump.
     // init common variables for dump session
-    for {
+    (for {
       _ <- this.sendQuery("set wait_timeout=9999999")
       _ <- this.sendQuery("set net_write_timeout=1800")
       _ <- this.sendQuery("set net_read_timeout=1800")
@@ -225,6 +240,8 @@ class MySQLConnection(
       // init dump context here
       dumpContext.setTimeZone(timeZone)
 
+      dumpContext
+    }).flatMap { dumpContext =>
       // todo we should provide two api to distinguish between dump file and dump gtid.
       if (StringUtils.isEmpty(dumpString)) {
         this.connectionHandler.write(
@@ -235,13 +252,12 @@ class MySQLConnection(
       } else {
         this.connectionHandler.write(BinlogDumpGTIDMessage("", 4, dumpString, this.slaveId), dumpContext)
       }
-
-      // start heart beat check schedule
+    }.map { _ =>
+      // start heart beat check schedule finally
+      this.lastEventReadTime = System.currentTimeMillis() // mark to remove from event loop
       this.heartBeatScheduler = scheduleAtFixedRate(checkHeartBeat(), heartbeatInterval.second)
-
+      this
     }
-
-    // todo finish dump promise at here. return a Future which wrap a binlog event channel.
   }
 
   def checkHeartBeat(): Unit = {

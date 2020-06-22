@@ -13,5 +13,4 @@ object ExecutorServiceUtils {
   def newFixedPool(count: Int, name: String): ExecutorService = {
     Executors.newFixedThreadPool(count, DaemonThreadsFactory(name))
   }
-
 }

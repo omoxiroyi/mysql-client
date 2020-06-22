@@ -1,8 +1,10 @@
+import java.util.concurrent.Executor
+
 import com.fan.mysql.async.MySQLConnection
 import com.fan.mysql.async.db.Configuration
 import com.fan.mysql.async.util.Log.Logging
 
-import scala.util.Success
+import scala.util.{Failure, Success}
 
 object Main extends App with Logging {
 
@@ -19,7 +21,18 @@ object Main extends App with Logging {
 
   conn.connect.onComplete {
     case Success(connection) =>
-      connection.dump("5afad620-7695-11e7-a21d-ecf4bbea6648:161928552,b86a3f41-ece0-11e9-8197-246e9615a0d0:1,f01980ee-b0e0-11e9-afc1-c191932e2c51:1-44048")
+      connection.dump("5afad620-7695-11e7-a21d-ecf4bbea6648:161928552,b86a3f41-ece0-11e9-8197-246e9615a0d0:1,f01980ee-b0e0-11e9-afc1-c191932e2c51:1-44048",
+        null,
+        event => {
+          logger.info(s"receive a binlog event.\n$event")
+          true
+        }, global.asInstanceOf[Executor])
+        .onComplete {
+          case Failure(exception) =>
+            logger.info("Start dump binlog failed", exception)
+          case _ =>
+            logger.info("Start dump binlog")
+        }
   }
 
   /*conn.connect.onComplete {

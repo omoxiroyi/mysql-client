@@ -1,5 +1,9 @@
 package com.fan.mysql.async.db
 
+import java.util.concurrent.Executor
+
+import com.fan.mysql.async.binlog.{BinlogEventFilter, BinlogEventHandler}
+
 import scala.concurrent.Future
 
 /**
@@ -120,7 +124,11 @@ trait Connection {
   /**
    * Dump binary log from mysql server.
    *
-   * @param dumpString binlog position or gtid potion to start dump
+   * @param dumpString binlog position or gtid position to start dump
+   * @param filter     binlog filter which accept event satisfy predict
+   * @param handler    a interface defined how to handle binlog we received
+   * @param executor   executor context we execute handle method
    */
-  def dump(dumpString: String): Unit
+  def dump(dumpString: String, filter: BinlogEventFilter, handler: BinlogEventHandler,
+           executor: Executor): Future[Connection]
 }

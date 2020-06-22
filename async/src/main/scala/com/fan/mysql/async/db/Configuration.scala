@@ -56,7 +56,7 @@ case class Configuration(
                           queryTimeout: Option[Duration] = None
                         ) {
 
-  // convince for Java constructor
+  // Java constructor
   def this(username: String,
            host: String,
            port: Int,
