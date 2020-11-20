@@ -1,4 +1,3 @@
-
 package com.fan.mysql.async.message.server
 
 import com.fan.mysql.async.binary.decoder.BinaryDecoder
@@ -7,21 +6,21 @@ import com.fan.mysql.async.general.ColumnData
 import com.fan.mysql.async.util.CharsetMapper
 
 case class ColumnDefinitionMessage(
-                                    catalog: String,
-                                    schema: String,
-                                    table: String,
-                                    originalTable: String,
-                                    name: String,
-                                    originalName: String,
-                                    characterSet: Int,
-                                    columnLength: Long,
-                                    columnType: Int,
-                                    flags: Short,
-                                    decimals: Byte,
-                                    binaryDecoder: BinaryDecoder,
-                                    textDecoder: ColumnDecoder
-                                  )
-  extends ServerMessage(ServerMessage.ColumnDefinition) with ColumnData {
+    catalog: String,
+    schema: String,
+    table: String,
+    originalTable: String,
+    name: String,
+    originalName: String,
+    characterSet: Int,
+    columnLength: Long,
+    columnType: Int,
+    flags: Short,
+    decimals: Byte,
+    binaryDecoder: BinaryDecoder,
+    textDecoder: ColumnDecoder
+) extends ServerMessage(ServerMessage.ColumnDefinition)
+    with ColumnData {
 
   def dataType: Int = this.columnType
 

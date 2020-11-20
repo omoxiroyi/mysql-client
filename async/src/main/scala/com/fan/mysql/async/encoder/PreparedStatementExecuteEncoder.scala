@@ -1,4 +1,3 @@
-
 package com.fan.mysql.async.encoder
 
 import com.fan.mysql.async.binary.BinaryRowEncoder
@@ -6,7 +5,6 @@ import com.fan.mysql.async.column.ColumnTypes
 import com.fan.mysql.async.message.client.{ClientMessage, PreparedStatementExecuteMessage}
 import com.fan.mysql.async.util.ByteBufferUtils
 import io.netty.buffer.{ByteBuf, Unpooled}
-
 
 class PreparedStatementExecuteEncoder(rowEncoder: BinaryRowEncoder) extends MessageEncoder {
 
@@ -43,8 +41,10 @@ class PreparedStatementExecuteEncoder(rowEncoder: BinaryRowEncoder) extends Mess
         parameterTypesBuffer.writeShort(ColumnTypes.FIELD_TYPE_NULL)
       } else {
         value match {
-          case Some(v) => encodeValue(parameterTypesBuffer, parameterValuesBuffer, v, valuesToInclude(index))
-          case _ => encodeValue(parameterTypesBuffer, parameterValuesBuffer, value, valuesToInclude(index))
+          case Some(v) =>
+            encodeValue(parameterTypesBuffer, parameterValuesBuffer, v, valuesToInclude(index))
+          case _ =>
+            encodeValue(parameterTypesBuffer, parameterValuesBuffer, value, valuesToInclude(index))
         }
       }
       index += 1
@@ -60,7 +60,10 @@ class PreparedStatementExecuteEncoder(rowEncoder: BinaryRowEncoder) extends Mess
     Unpooled.wrappedBuffer(bitMapBuffer, parameterTypesBuffer, parameterValuesBuffer)
   }
 
-  private def encodeValue(parameterTypesBuffer: ByteBuf, parameterValuesBuffer: ByteBuf, value: Any, includeValue: Boolean): Unit = {
+  private def encodeValue(parameterTypesBuffer: ByteBuf,
+                          parameterValuesBuffer: ByteBuf,
+                          value: Any,
+                          includeValue: Boolean): Unit = {
     val encoder = rowEncoder.encoderFor(value)
     parameterTypesBuffer.writeShort(encoder.encodesTo)
     if (includeValue)

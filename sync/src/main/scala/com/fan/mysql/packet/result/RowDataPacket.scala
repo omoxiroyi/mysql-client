@@ -5,32 +5,31 @@ import java.util
 import com.fan.mysql.packet.MySQLPacket
 import com.fan.mysql.util.MySQLPacketBuffer
 
-/**
- * <pre>
- * Bytes                   Name
- * -----                   ----
- * n (Length Coded String) (column value)
- * ...
- *
- * (column value): The data in the column, as a character string.
- * If a column is defined as non-character, the
- * server converts the value into a character
- * before sending it. Since the value is a Length
- * Coded String, a NULL can be represented with a
- * single byte containing 251(see the description
- * of Length Coded Strings in section "Elements" above).
- *
- * &#64;see http://forge.mysql.com/wiki/MySQL_Internals_ClientServer_Protocol#Row_Data_Packet
- * </pre>
- *
- * @author fan
- */
+/** <pre>
+  * Bytes                   Name
+  * -----                   ----
+  * n (Length Coded String) (column value)
+  * ...
+  *
+  * (column value): The data in the column, as a character string.
+  * If a column is defined as non-character, the
+  * server converts the value into a character
+  * before sending it. Since the value is a Length
+  * Coded String, a NULL can be represented with a
+  * single byte containing 251(see the description
+  * of Length Coded Strings in section "Elements" above).
+  *
+  * &#64;see http://forge.mysql.com/wiki/MySQL_Internals_ClientServer_Protocol#Row_Data_Packet
+  * </pre>
+  *
+  * @author fan
+  */
 class RowDataPacket extends MySQLPacket {
   protected val NULL_MARK: Byte = 251.toByte
 
-  var fieldCount: Int = _
+  var fieldCount: Int                     = _
   var fieldValues: util.List[Array[Byte]] = _
-  var isNull = false
+  var isNull                              = false
 
   def this(fieldCount: Int) {
     this()

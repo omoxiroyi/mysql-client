@@ -4,10 +4,9 @@ import java.util
 
 import com.fan.mysql.packet.result.{FieldPacket, RowDataPacket}
 
-/**
- * A query result consumer for eliminating the problem of using
- * too much memory when using resultSet directly
- */
+/** A query result consumer for eliminating the problem of using
+  * too much memory when using resultSet directly
+  */
 trait MysqlConnQueryHandler {
   @throws[Exception]
   def onFieldPackets(fields: util.List[FieldPacket]): Unit

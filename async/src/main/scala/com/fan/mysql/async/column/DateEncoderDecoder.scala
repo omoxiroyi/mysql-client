@@ -1,5 +1,3 @@
-
-
 package com.fan.mysql.async.column
 
 import com.fan.mysql.async.exceptions.DateEncoderNotAvailableException
@@ -21,9 +19,9 @@ object DateEncoderDecoder extends ColumnEncoderDecoder {
 
   override def encode(value: Any): String = {
     value match {
-      case d: java.sql.Date => this.formatter.print(new LocalDate(d))
+      case d: java.sql.Date   => this.formatter.print(new LocalDate(d))
       case d: ReadablePartial => this.formatter.print(d)
-      case _ => throw new DateEncoderNotAvailableException(value)
+      case _                  => throw new DateEncoderNotAvailableException(value)
     }
   }
 

@@ -11,10 +11,10 @@ object BinlogDumpGtidPacket {
 }
 
 class BinlogDumpGtidPacket extends CommandPacket {
-  private var binlogFileName: String = _
-  private var binlogPosition: Long = 0L
+  private var binlogFileName: String   = _
+  private var binlogPosition: Long     = 0L
   private var gtidSet: GtidSetPosition = _
-  private var serverId: Long = -1
+  private var serverId: Long           = -1
 
   def this(binlogFileName: String, binlogPosition: Long, gtidSet: String, serverId: Long) = {
     this()
@@ -75,8 +75,8 @@ class BinlogDumpGtidPacket extends CommandPacket {
 
   private def hexToByteArray(uuid: String): Array[Byte] = {
     val b: Array[Byte] = new Array[Byte](uuid.length / 2)
-    var i: Int = 0
-    var j: Int = 0
+    var i: Int         = 0
+    var j: Int         = 0
     while (j < uuid.length) {
       b({
         i += 1

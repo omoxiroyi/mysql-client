@@ -6,9 +6,8 @@ import java.nio.ByteBuffer
 import com.fan.mysql.packet.CommandPacket
 import com.fan.mysql.util.MySQLPacketBuffer
 
-/**
- * @author fan
- */
+/** @author fan
+  */
 class QueryCommandPacket extends CommandPacket {
   var query: String = _
 
@@ -24,18 +23,19 @@ class QueryCommandPacket extends CommandPacket {
 
   override def calcPacketSize: Int = {
     var packSize = super.calcPacketSize
-    if (query != null) try packSize += (if (this.charset == null) query.getBytes.length
-    else query.getBytes(this.charset).length)
-    catch {
-      case e: UnsupportedEncodingException =>
-        throw new RuntimeException(e)
-    }
+    if (query != null)
+      try packSize += (if (this.charset == null) query.getBytes.length
+                       else query.getBytes(this.charset).length)
+      catch {
+        case e: UnsupportedEncodingException =>
+          throw new RuntimeException(e)
+      }
     packSize
   }
 
   override def toByteBuffer(charset: String): ByteBuffer = {
     setCharset(charset)
-    val size = calcPacketSize
+    val size   = calcPacketSize
     val buffer = new MySQLPacketBuffer(size)
     buffer.init(charset)
     write2Buffer(buffer)

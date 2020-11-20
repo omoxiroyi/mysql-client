@@ -6,9 +6,9 @@ import com.fan.mysql.binlog.BinlogEventParser;
 
 public abstract class FilterableParser implements BinlogEventParser {
 
-	protected BinlogEventFilter filter;
+    protected BinlogEventFilter filter;
 
-	public void setFilter(BinlogEventFilter filter) {
-		this.filter = filter;
-	}
+    public void setFilter(BinlogEventFilter filter) {
+        this.filter = filter;
+    }
 }

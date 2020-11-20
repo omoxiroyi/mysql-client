@@ -2,4 +2,5 @@ rootProject.name = 'mysql-client'
 include 'async'
 include 'sync'
 include 'dts'
+include 'common'
 

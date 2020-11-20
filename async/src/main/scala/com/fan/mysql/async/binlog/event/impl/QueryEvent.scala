@@ -4,14 +4,14 @@ import com.fan.mysql.async.binlog.event.{AbstractEvent, EventHeader}
 import com.fan.mysql.async.binlog.parse.QueryEventParser.StatusVariable
 
 class QueryEvent(header: EventHeader) extends AbstractEvent(header) {
-  private[this] var threadId = 0L
-  private[this] var execTime = 0L
-  private[this] var databaseLength = 0
-  private[this] var errorCode = 0
-  private[this] var statusVariablesLength = 0
+  private[this] var threadId                        = 0L
+  private[this] var execTime                        = 0L
+  private[this] var databaseLength                  = 0
+  private[this] var errorCode                       = 0
+  private[this] var statusVariablesLength           = 0
   private[this] var statusVariables: StatusVariable = _
-  private[this] var databaseName: String = _
-  private[this] var query: String = _
+  private[this] var databaseName: String            = _
+  private[this] var query: String                   = _
 
   def getThreadId: Long = threadId
 

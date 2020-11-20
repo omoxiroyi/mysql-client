@@ -1,12 +1,8 @@
-
-
-
 package com.fan.mysql.async.binary.encoder
 
 import com.fan.mysql.async.column.ColumnTypes
 import com.fan.mysql.async.util.ChannelWrapper._
 import io.netty.buffer.ByteBuf
-
 
 object ByteArrayEncoder extends BinaryEncoder {
   def encode(value: Any, buffer: ByteBuf): Unit = {

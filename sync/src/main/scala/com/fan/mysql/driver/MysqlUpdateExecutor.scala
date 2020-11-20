@@ -10,7 +10,7 @@ import com.fan.mysql.util.{Logging, MySQLPacketBuffer, PacketManager}
 class MysqlUpdateExecutor extends Logging {
 
   private var channel: SocketChannel = _
-  private var charset = "utf-8"
+  private var charset                = "utf-8"
 
   def this(connector: MysqlConnector) = {
     this()

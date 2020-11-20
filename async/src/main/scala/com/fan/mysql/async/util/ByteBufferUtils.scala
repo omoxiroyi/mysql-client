@@ -1,4 +1,3 @@
-
 package com.fan.mysql.async.util
 
 import java.nio.ByteOrder
@@ -33,7 +32,7 @@ object ByteBufferUtils {
     b.markReaderIndex()
 
     var byte: Byte = 0
-    var count = 0
+    var count      = 0
 
     do {
       byte = b.readByte()
@@ -57,8 +56,8 @@ object ByteBufferUtils {
     b.markReaderIndex()
 
     var byte: Byte = -1
-    var count = 0
-    var offset = 1
+    var count      = 0
+    var offset     = 1
 
     while (byte != 0) {
       if (b.readableBytes() > 0) {

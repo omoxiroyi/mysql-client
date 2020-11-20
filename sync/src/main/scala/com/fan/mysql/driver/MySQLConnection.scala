@@ -18,9 +18,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils
 
 import scala.util.control.ControlThrowable
 
-class MySQLConnection(address: InetSocketAddress,
-                      username: String,
-                      password: String) extends Logging {
+class MySQLConnection(address: InetSocketAddress, username: String, password: String)
+    extends Logging {
 
   def this(host: String, port: Int, username: String, password: String) =
     this(new InetSocketAddress(host, port), username, password)
@@ -29,12 +28,12 @@ class MySQLConnection(address: InetSocketAddress,
 
   private[this] val heart_beat_interval = 10 * 1000000000L
 
-  private[this] var slaveId = 0L
-  private[this] var binlogFormat = BinlogFormat.ROW
-  private[this] var semiSync = false
-  private[this] var heartBeat = false
+  private[this] var slaveId               = 0L
+  private[this] var binlogFormat          = BinlogFormat.ROW
+  private[this] var semiSync              = false
+  private[this] var heartBeat             = false
   private[this] var heartBeatTimer: Timer = _
-  private[this] var timeZone = "GMT-0:00"
+  private[this] var timeZone              = "GMT-0:00"
 
   @throws[IOException]
   def connect(): Unit = {
@@ -77,7 +76,7 @@ class MySQLConnection(address: InetSocketAddress,
   def dump(dumpString: String, filter: BinlogEventFilter, handler: BinlogEventHandler): Unit = {
     updateSettings()
     val binlogChecksum = loadBinlogChecksum
-    val format = getBinlogFormat
+    val format         = getBinlogFormat
     if (!format.isRow) logger.warn("binlog format is :" + format + ", row format is needed!")
     sendBinlogDump(dumpString)
     val decoder = new BinlogDecoder
@@ -97,16 +96,20 @@ class MySQLConnection(address: InetSocketAddress,
         breakable {
           fetcher.fetch()
           val event = decoder.decode(fetcher, context)
-          if (event == null) break
+          if (event == null)
+            break
           if (context.isNeedReply) { // send ack
             val packet = new SemiSyncAckPacket(context.getBinlogFileName, context.getBinlogPosition)
-            PacketManager.write(connector.getChannel, Array[ByteBuffer](ByteBuffer.wrap(packet.toByteBuffer(connector.getCharset).array)))
+            PacketManager.write(
+              connector.getChannel,
+              Array[ByteBuffer](ByteBuffer.wrap(packet.toByteBuffer(connector.getCharset).array))
+            )
             // reset to false
             context.setNeedReply(false)
           }
-          // loss event when MYSQL and software crash here at the same
-          // time
-          if (!handler.handle(event)) throw new BreakControlAgain
+          // loss event when MYSQL and software crash here at the same time
+          if (!handler.handle(event))
+            throw new BreakControlAgain
         }
       }
     } catch {
@@ -125,7 +128,8 @@ class MySQLConnection(address: InetSocketAddress,
     var rs: ResultSetPacket = null
     rs = query("select @master_binlog_checksum")
     val columnValues: util.List[String] = rs.getRows.get(0)
-    if (columnValues.get(0).toUpperCase == "CRC32") binlogChecksum = MySQLConstants.BINLOG_CHECKSUM_ALG_CRC32
+    if (columnValues.get(0).toUpperCase == "CRC32")
+      binlogChecksum = MySQLConstants.BINLOG_CHECKSUM_ALG_CRC32
     else binlogChecksum = MySQLConstants.BINLOG_CHECKSUM_ALG_OFF
     binlogChecksum
   }
@@ -138,35 +142,42 @@ class MySQLConnection(address: InetSocketAddress,
     else if (dumpString.contains(".")) {
       val splits = dumpString.split(":")
       cmd = new BinlogDumpFilePacket(splits(0), splits(1).toLong, this.slaveId)
-    }
-    else cmd = new BinlogDumpGtidPacket("", 4, dumpString, this.slaveId)
+    } else cmd = new BinlogDumpGtidPacket("", 4, dumpString, this.slaveId)
     cmd.packetId = 0
-    PacketManager.write(connector.getChannel, Array[ByteBuffer](ByteBuffer.wrap(cmd.toByteBuffer(connector.getCharset).array)))
+    PacketManager.write(
+      connector.getChannel,
+      Array[ByteBuffer](ByteBuffer.wrap(cmd.toByteBuffer(connector.getCharset).array))
+    )
     connector.dumping = true
   }
 
   private def scheduleHeartBeat(fetcher: ConnectionFetcher): Unit = {
     heartBeatTimer = new Timer
-    heartBeatTimer.schedule(new TimerTask() {
-      override def run(): Unit = {
-        val lastReadTime = fetcher.getLastReadTime
-        if (lastReadTime < 0) {
-          logger.debug("Heartbeat check, not fetching")
-          return
+    heartBeatTimer.schedule(
+      new TimerTask() {
+        override def run(): Unit = {
+          val lastReadTime = fetcher.getLastReadTime
+          if (lastReadTime < 0) {
+            logger.debug("Heartbeat check, not fetching")
+            return
+          }
+          val currentTime = System.currentTimeMillis
+          val nextDelay   = currentTime - lastReadTime
+          logger.debug(
+            s"Heartbeat check, current time: $currentTime, last read: $lastReadTime, delay time: $nextDelay ms"
+          )
+          try if (nextDelay >= 2 * heart_beat_interval / 1000000) {
+            logger.error("connection read timeout!")
+            disconnect()
+          } catch {
+            case e: IOException =>
+              logger.error("heartbeat error", e)
+          }
         }
-        val currentTime = System.currentTimeMillis
-        val nextDelay = currentTime - lastReadTime
-        logger.debug(s"Heartbeat check, current time: $currentTime, last read: $lastReadTime, delay time: $nextDelay ms")
-        try if (nextDelay >= 2 * heart_beat_interval / 1000000) {
-          logger.error("connection read timeout!")
-          disconnect()
-        }
-        catch {
-          case e: IOException =>
-            logger.error("heartbeat error", e)
-        }
-      }
-    }, heart_beat_interval / 1000000, heart_beat_interval / 1000000)
+      },
+      heart_beat_interval / 1000000,
+      heart_beat_interval / 1000000
+    )
   }
 
   def getBinlogFormat: BinlogFormat = {
@@ -174,9 +185,8 @@ class MySQLConnection(address: InetSocketAddress,
     binlogFormat
   }
 
-  /**
-   * 判断一下是否采用ROW模式
-   */
+  /** 判断一下是否采用ROW模式
+    */
   private def loadBinlogFormat(): Unit = {
     var rs: ResultSetPacket = null
     try rs = query("show variables like 'binlog_format'")
@@ -186,22 +196,23 @@ class MySQLConnection(address: InetSocketAddress,
     }
     val columnValues = rs.getRows.get(0)
     if (columnValues == null || columnValues.size != 2) {
-      logger.warn("unexpected binlog format query result, this may cause unexpected result, so throw exception to request network to io shutdown.")
+      logger.warn(
+        "unexpected binlog format query result, this may cause unexpected result, so throw exception to request network to io shutdown."
+      )
       throw new IllegalStateException("unexpected binlog format query result:" + rs.getRows)
     }
     binlogFormat = BinlogFormat.valuesOf(columnValues.get(1))
-    if (binlogFormat == null) throw new IllegalStateException("unexpected binlog format query result:" + rs.getRows)
+    if (binlogFormat == null)
+      throw new IllegalStateException("unexpected binlog format query result:" + rs.getRows)
   }
 
-
-  /**
-   * the settings that will need to be checked or set:<br>
-   * <ol>
-   * <li>wait_timeout</li>
-   * <li>net_write_timeout</li>
-   * <li>net_read_timeout</li>
-   * </ol>
-   */
+  /** the settings that will need to be checked or set:<br>
+    * <ol>
+    * <li>wait_timeout</li>
+    * <li>net_write_timeout</li>
+    * <li>net_read_timeout</li>
+    * </ol>
+    */
   @throws[IOException]
   private def updateSettings(): Unit = {
     try update("set wait_timeout=9999999")
@@ -220,16 +231,16 @@ class MySQLConnection(address: InetSocketAddress,
         logger.warn(ExceptionUtils.getStackTrace(e))
     }
     try // 设置服务端返回结果时不做编码转化，直接按照数据库的二进制编码进行发送，由客户端自己根据需求进行编码转化
-      update("set names 'binary'")
+    update("set names 'binary'")
     catch {
       case e: Exception =>
         logger.warn(ExceptionUtils.getStackTrace(e))
     }
     try // mysql5.6针对checksum支持需要设置session变量
-      // 如果不设置会出现错误： Slave can not handle replication events with the
-      // checksum that master is configured to log
-      // 但也不能乱设置，需要和mysql server的checksum配置一致，不然RotateLogEvent会出现乱码
-      update("set @master_binlog_checksum= @@global.binlog_checksum")
+    // 如果不设置会出现错误： Slave can not handle replication events with the
+    // checksum that master is configured to log
+    // 但也不能乱设置，需要和mysql server的checksum配置一致，不然RotateLogEvent会出现乱码
+    update("set @master_binlog_checksum= @@global.binlog_checksum")
     catch {
       case e: Exception =>
         logger.warn(ExceptionUtils.getStackTrace(e))

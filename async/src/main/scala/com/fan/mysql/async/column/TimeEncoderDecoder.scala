@@ -1,5 +1,3 @@
-
-
 package com.fan.mysql.async.column
 
 import org.joda.time.LocalTime
@@ -12,7 +10,8 @@ object TimeEncoderDecoder {
 class TimeEncoderDecoder extends ColumnEncoderDecoder {
 
   final private val optional = new DateTimeFormatterBuilder()
-    .appendPattern(".SSSSSS").toParser
+    .appendPattern(".SSSSSS")
+    .toParser
 
   final private val format = new DateTimeFormatterBuilder()
     .appendPattern("HH:mm:ss")

@@ -14,11 +14,15 @@ object SendLongDataEncoder {
 }
 
 class SendLongDataEncoder
-  extends MessageToMessageEncoder[SendLongDataMessage](classOf[SendLongDataMessage]) {
+    extends MessageToMessageEncoder[SendLongDataMessage](classOf[SendLongDataMessage]) {
 
   import SendLongDataEncoder.log
 
-  def encode(ctx: ChannelHandlerContext, message: SendLongDataMessage, out: java.util.List[Object]): Unit = {
+  def encode(
+      ctx: ChannelHandlerContext,
+      message: SendLongDataMessage,
+      out: java.util.List[Object]
+  ): Unit = {
     if (log.isTraceEnabled) {
       log.trace(s"Writing message ${message.toString}")
     }

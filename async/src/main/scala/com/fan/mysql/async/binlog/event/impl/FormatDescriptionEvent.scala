@@ -2,7 +2,6 @@ package com.fan.mysql.async.binlog.event.impl
 
 import com.fan.mysql.async.binlog.event.{AbstractEvent, EventHeader}
 
-
 class FormatDescriptionEvent(header: EventHeader) extends AbstractEvent(header) {
   private[this] var binlogVersion: Int = _
   private[this] var serverVersion: String = _

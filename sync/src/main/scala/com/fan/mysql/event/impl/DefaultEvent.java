@@ -6,8 +6,8 @@ import com.fan.mysql.event.EventHeader;
 
 public class DefaultEvent extends AbstractEvent {
 
-	public DefaultEvent(EventHeader header) {
-		super(header);
-	}
+    public DefaultEvent(EventHeader header) {
+        super(header);
+    }
 
 }

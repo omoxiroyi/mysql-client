@@ -1,5 +1,3 @@
-
-
 package com.fan.mysql.async.encoder
 
 import com.fan.mysql.async.message.client.ClientMessage

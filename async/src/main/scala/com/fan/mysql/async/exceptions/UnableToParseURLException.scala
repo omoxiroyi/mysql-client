@@ -17,8 +17,9 @@
 package com.fan.mysql.async.exceptions
 
 /**
- * Thrown to indicate that a URL Parser could not understand the provided URL.
- */
-class UnableToParseURLException(message: String, base: Throwable) extends RuntimeException(message, base) {
+  * Thrown to indicate that a URL Parser could not understand the provided URL.
+  */
+class UnableToParseURLException(message: String, base: Throwable)
+    extends RuntimeException(message, base) {
   def this(message: String) = this(message, null)
 }

@@ -1,5 +1,3 @@
-
-
 package com.fan.mysql.async.message.server
 
 import io.netty.buffer.ByteBuf

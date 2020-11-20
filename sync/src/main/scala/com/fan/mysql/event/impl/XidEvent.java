@@ -6,18 +6,18 @@ import com.fan.mysql.event.EventHeader;
 
 public class XidEvent extends AbstractEvent {
 
-	private long xid;
+    private long xid;
 
-	public XidEvent(EventHeader header) {
-		super(header);
-	}
+    public XidEvent(EventHeader header) {
+        super(header);
+    }
 
-	public long getXid() {
-		return xid;
-	}
+    public long getXid() {
+        return xid;
+    }
 
-	public void setXid(long xid) {
-		this.xid = xid;
-	}
+    public void setXid(long xid) {
+        this.xid = xid;
+    }
 
 }

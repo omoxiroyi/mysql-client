@@ -1,5 +1,3 @@
-
-
 package com.fan.mysql.async.decoder
 
 import com.fan.mysql.async.message.server.{ColumnProcessingFinishedMessage, ServerMessage}

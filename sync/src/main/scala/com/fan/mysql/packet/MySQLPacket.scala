@@ -17,9 +17,8 @@ abstract class MySQLPacket {
 
   protected var charset: String = _
 
-  /**
-   * Instantiate the packet
-   */
+  /** Instantiate the packet
+    */
   def init(buffer: MySQLPacketBuffer, charset: String): Unit = {
     setCharset(charset)
     buffer.init(charset)
@@ -30,27 +29,24 @@ abstract class MySQLPacket {
     this.packetId = buffer.read
   }
 
-  /**
-   * Calculate the data packet size, excluding the header length.
-   *
-   * @return Header length
-   */
+  /** Calculate the data packet size, excluding the header length.
+    *
+    * @return Header length
+    */
   def calcPacketSize: Int = this.HEADER_SIZE
 
-  /**
-   * abstract write packet body method, implement by sub packet protocol
-   */
+  /** abstract write packet body method, implement by sub packet protocol
+    */
   def write2Buffer(buffer: MySQLPacketBuffer): Unit
 
-  /**
-   * Return the binary stream of the packet
-   *
-   * @param charset we used to serialize
-   * @return
-   */
+  /** Return the binary stream of the packet
+    *
+    * @param charset we used to serialize
+    * @return
+    */
   def toByteBuffer(charset: String): ByteBuffer = {
     setCharset(charset)
-    val size = calcPacketSize
+    val size   = calcPacketSize
     val buffer = new MySQLPacketBuffer(size)
     buffer.init(charset)
     write2Buffer(buffer)

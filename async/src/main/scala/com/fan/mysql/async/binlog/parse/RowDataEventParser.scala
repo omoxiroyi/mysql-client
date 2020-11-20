@@ -37,7 +37,9 @@ class RowDataEventParser extends BinlogEventParser with Logging {
   private[this] var nullBits: util.BitSet = _
   private[this] var nullBitIndex = 0
 
-  override def parse(nettyBuffer: ByteBuf, header: EventHeader, context: BinlogDumpContext): BinlogEvent = {
+  override def parse(nettyBuffer: ByteBuf,
+                     header: EventHeader,
+                     context: BinlogDumpContext): BinlogEvent = {
 
     val buffer = new LogBuffer(nettyBuffer.slice().toArray())
 
@@ -64,7 +66,7 @@ class RowDataEventParser extends BinlogEventParser with Logging {
       val start = buffer.position
       val end = start + headerLen
       var i = start
-      while ( {
+      while ({
         i < end
       }) buffer.getUint8({
         i += 1
@@ -90,7 +92,7 @@ class RowDataEventParser extends BinlogEventParser with Logging {
     val columns = buffer.getBitmap(columnLen)
     var changedColumns: util.BitSet = null
     if (header.eventType == MySQLConstants.UPDATE_ROWS_EVENT_V1
-      || header.eventType == MySQLConstants.UPDATE_ROWS_EVENT)
+        || header.eventType == MySQLConstants.UPDATE_ROWS_EVENT)
       changedColumns = buffer.getBitmap(columnLen)
     nullBits = new util.BitSet(columnLen)
     // parse and convert to row event
@@ -119,7 +121,12 @@ class RowDataEventParser extends BinlogEventParser with Logging {
     event
   }
 
-  private def parseRow(buffer: LogBuffer, row: RowData, tableMap: TableMapEvent, colBit: util.BitSet, isAfter: Boolean, timeZone: String): Unit = {
+  private def parseRow(buffer: LogBuffer,
+                       row: RowData,
+                       tableMap: TableMapEvent,
+                       colBit: util.BitSet,
+                       isAfter: Boolean,
+                       timeZone: String): Unit = {
     var currentColumn = 0
     var columnCount = 0
     // calculate real column count
@@ -139,9 +146,9 @@ class RowDataEventParser extends BinlogEventParser with Logging {
         val cInfo = tableMap.getColumnInfo(i)
         val column = new EventColumn
         if (nullBits.get({
-          nullBitIndex += 1
-          nullBitIndex - 1
-        })) column.setNull(true)
+              nullBitIndex += 1
+              nullBitIndex - 1
+            })) column.setNull(true)
         else {
           val value = fetchValue(buffer, cInfo.`type`, cInfo.meta, timeZone)
           column.setColumnValue(value)
@@ -156,8 +163,7 @@ class RowDataEventParser extends BinlogEventParser with Logging {
     if (isAfter) {
       row.setAfterColumns(rowData)
       row.setAfterBit(colBit)
-    }
-    else {
+    } else {
       row.setBeforeColumns(rowData)
       row.setBeforeBit(colBit)
     }
@@ -171,56 +177,55 @@ class RowDataEventParser extends BinlogEventParser with Logging {
       val byte0 = meta >> 8
       val byte1 = meta & 0xff
       if ((byte0 & 0x30) != 0x30) {
-        /* a long CHAR() field: see #37426 */ len = byte1 | (((byte0 & 0x30) ^ 0x30) << 4)
+        /* a long CHAR() field: see #37426 */
+        len = byte1 | (((byte0 & 0x30) ^ 0x30) << 4)
         dataType = byte0 | 0x30
-      }
-      else byte0 match {
-        case MySQLConstants.MYSQL_TYPE_SET =>
-        case MySQLConstants.MYSQL_TYPE_ENUM =>
-        case MySQLConstants.MYSQL_TYPE_STRING =>
-          dataType = byte0
-          len = byte1
+      } else
+        byte0 match {
+          case MySQLConstants.MYSQL_TYPE_SET  =>
+          case MySQLConstants.MYSQL_TYPE_ENUM =>
+          case MySQLConstants.MYSQL_TYPE_STRING =>
+            dataType = byte0
+            len = byte1
 
-        case _ =>
-          throw new IllegalArgumentException(String.format("!! Don't know how to handle column type=%d meta=%d (%04X)", dataType, meta, meta))
-      }
-    }
-    else len = meta
+          case _ =>
+            throw new IllegalArgumentException(
+              String.format("!! Don't know how to handle column type=%d meta=%d (%04X)",
+                            dataType,
+                            meta,
+                            meta))
+        }
+    } else len = meta
     dataType match {
       case MySQLConstants.MYSQL_TYPE_TINY =>
         val num = new Array[Byte](1)
         buffer.fillBytes(num, 0, 1)
         value = num
 
-
       case MySQLConstants.MYSQL_TYPE_SHORT =>
         val num = new Array[Byte](2)
         buffer.fillBytes(num, 0, 2)
         value = num
-
 
       case MySQLConstants.MYSQL_TYPE_INT24 =>
         val num = new Array[Byte](3)
         buffer.fillBytes(num, 0, 3)
         value = num
 
-
       case MySQLConstants.MYSQL_TYPE_LONG =>
         val num = new Array[Byte](4)
         buffer.fillBytes(num, 0, 4)
         value = num
-
 
       case MySQLConstants.MYSQL_TYPE_LONGLONG =>
         val num = new Array[Byte](8)
         buffer.fillBytes(num, 0, 8)
         value = num
 
-
       case MySQLConstants.MYSQL_TYPE_DECIMAL =>
-        logger.warn("MYSQL_TYPE_DECIMAL : This enumeration value is " + "only used internally and cannot exist in a binlog!")
+        logger.warn(
+          "MYSQL_TYPE_DECIMAL : This enumeration value is " + "only used internally and cannot exist in a binlog!")
         value = null /* unknown format */
-
 
       case MySQLConstants.MYSQL_TYPE_NEWDECIMAL =>
         val precision = meta >> 8
@@ -228,23 +233,20 @@ class RowDataEventParser extends BinlogEventParser with Logging {
         val number = buffer.getDecimal(precision, decimals)
         value = number.toPlainString
 
-
       case MySQLConstants.MYSQL_TYPE_FLOAT =>
         value = buffer.getFloat32
-
 
       case MySQLConstants.MYSQL_TYPE_DOUBLE =>
         value = buffer.getDouble64
 
-
       case MySQLConstants.MYSQL_TYPE_BIT =>
-        /* Meta-data: bit_len, bytes_in_rec, 2 bytes */ val nbits = ((meta >> 8) * 8) + (meta & 0xff)
+        /* Meta-data: bit_len, bytes_in_rec, 2 bytes */
+        val nbits = ((meta >> 8) * 8) + (meta & 0xff)
         len = (nbits + 7) / 8
         if (nbits <= 1) len = 1
         val bit = new Array[Byte](len)
         buffer.fillBytes(bit, 0, len)
         value = bit
-
 
       case MySQLConstants.MYSQL_TYPE_TIMESTAMP =>
         val i32 = buffer.getUint32
@@ -253,7 +255,6 @@ class RowDataEventParser extends BinlogEventParser with Logging {
           val v = new Timestamp(i32 * 1000).toString
           value = v.substring(0, v.length - 2)
         }
-
 
       case MySQLConstants.MYSQL_TYPE_TIMESTAMP2 =>
         val tv_sec = buffer.getBeUint32
@@ -289,9 +290,7 @@ class RowDataEventParser extends BinlogEventParser with Logging {
           var microSecond = usecondsToStr(tv_usec, meta)
           microSecond = microSecond.substring(0, meta)
           value = second + '.' + microSecond
-        }
-        else value = second
-
+        } else value = second
 
       case MySQLConstants.MYSQL_TYPE_DATETIME =>
         val i64 = buffer.getLong64
@@ -299,9 +298,14 @@ class RowDataEventParser extends BinlogEventParser with Logging {
         else {
           val d = (i64 / 1000000).toInt
           val t = (i64 % 1000000).toInt
-          value = String.format("%04d-%02d-%02d %02d:%02d:%02d", d / 10000, (d % 10000) / 100, d % 100, t / 10000, (t % 10000) / 100, t % 100)
+          value = String.format("%04d-%02d-%02d %02d:%02d:%02d",
+                                d / 10000,
+                                (d % 10000) / 100,
+                                d % 100,
+                                t / 10000,
+                                (t % 10000) / 100,
+                                t % 100)
         }
-
 
       case MySQLConstants.MYSQL_TYPE_DATETIME2 =>
         val intpart = buffer.getBeUlong40 - DATETIMEF_INT_OFS
@@ -332,23 +336,31 @@ class RowDataEventParser extends BinlogEventParser with Logging {
           val ymd = intpart >> 17
           val ym = ymd >> 5
           val hms = intpart % (1 << 17)
-          second = String.format("%04d-%02d-%02d %02d:%02d:%02d", (ym / 13).toInt, (ym % 13).toInt, (ymd % (1 << 5)).toInt, (hms >> 12).toInt, ((hms >> 6) % (1 << 6)).toInt, (hms % (1 << 6)).toInt)
+          second = String.format("%04d-%02d-%02d %02d:%02d:%02d",
+                                 (ym / 13).toInt,
+                                 (ym % 13).toInt,
+                                 (ymd % (1 << 5)).toInt,
+                                 (hms >> 12).toInt,
+                                 ((hms >> 6) % (1 << 6)).toInt,
+                                 (hms % (1 << 6)).toInt)
         }
         if (meta >= 1) {
           var microSecond = usecondsToStr(frac, meta)
           microSecond = microSecond.substring(0, meta)
           value = second + '.' + microSecond
-        }
-        else value = second
-
+        } else value = second
 
       case MySQLConstants.MYSQL_TYPE_TIME =>
         val i32 = buffer.getInt24
         val u32 = Math.abs(i32)
         if (i32 == 0) value = "00:00:00"
-        else value = String.format("%s%02d:%02d:%02d", if (i32 >= 0) ""
-        else "-", u32 / 10000, (u32 % 10000) / 100, u32 % 100)
-
+        else
+          value = String.format("%s%02d:%02d:%02d",
+                                if (i32 >= 0) ""
+                                else "-",
+                                u32 / 10000,
+                                (u32 % 10000) / 100,
+                                u32 % 100)
 
       case MySQLConstants.MYSQL_TYPE_TIME2 =>
         var intpart = 0L
@@ -397,33 +409,33 @@ class RowDataEventParser extends BinlogEventParser with Logging {
         else {
           val ultime = Math.abs(ltime)
           intpart = ultime >> 24
-          second = String.format("%s%02d:%02d:%02d", if (ltime >= 0) ""
-          else "-", ((intpart >> 12) % (1 << 10)).toInt, ((intpart >> 6) % (1 << 6)).toInt, (intpart % (1 << 6)).toInt)
+          second = String.format("%s%02d:%02d:%02d",
+                                 if (ltime >= 0) ""
+                                 else "-",
+                                 ((intpart >> 12) % (1 << 10)).toInt,
+                                 ((intpart >> 6) % (1 << 6)).toInt,
+                                 (intpart % (1 << 6)).toInt)
         }
         if (meta >= 1) {
           var microSecond = usecondsToStr(Math.abs(frac), meta)
           microSecond = microSecond.substring(0, meta)
           value = second + '.' + microSecond
-        }
-        else value = second
-
+        } else value = second
 
       case MySQLConstants.MYSQL_TYPE_NEWDATE =>
-        logger.warn("MYSQL_TYPE_NEWDATE : This enumeration value is " + "only used internally and cannot exist in a binlog!")
+        logger.warn(
+          "MYSQL_TYPE_NEWDATE : This enumeration value is " + "only used internally and cannot exist in a binlog!")
         value = null
-
 
       case MySQLConstants.MYSQL_TYPE_DATE =>
         val i32 = buffer.getUint24
         if (i32 == 0) value = "0000-00-00"
         else value = String.format("%04d-%02d-%02d", i32 / (16 * 32), i32 / 32 % 16, i32 % 32)
 
-
       case MySQLConstants.MYSQL_TYPE_YEAR =>
         val i32 = buffer.getUint8
         if (i32 == 0) value = "0000"
         else value = String.valueOf((i32 + 1900).toShort)
-
 
       case MySQLConstants.MYSQL_TYPE_ENUM =>
         var int32: Array[Byte] = null
@@ -441,7 +453,6 @@ class RowDataEventParser extends BinlogEventParser with Logging {
         }
         value = int32
 
-
       case MySQLConstants.MYSQL_TYPE_SET =>
         val nbits = (meta & 0xFF) * 8
         len = (nbits + 7) / 8
@@ -450,48 +461,49 @@ class RowDataEventParser extends BinlogEventParser with Logging {
         buffer.fillBytes(set, 0, len)
         value = set
 
-
       case MySQLConstants.MYSQL_TYPE_TINY_BLOB =>
-        logger.warn("MYSQL_TYPE_TINY_BLOB : This enumeration value is " + "only used internally and cannot exist in a binlog!")
+        logger.warn(
+          "MYSQL_TYPE_TINY_BLOB : This enumeration value is " + "only used internally and cannot exist in a binlog!")
 
       case MySQLConstants.MYSQL_TYPE_MEDIUM_BLOB =>
-        logger.warn("MYSQL_TYPE_MEDIUM_BLOB : This enumeration value is " + "only used internally and cannot exist in a binlog!")
+        logger.warn(
+          "MYSQL_TYPE_MEDIUM_BLOB : This enumeration value is " + "only used internally and cannot exist in a binlog!")
 
       case MySQLConstants.MYSQL_TYPE_LONG_BLOB =>
-        logger.warn("MYSQL_TYPE_LONG_BLOB : This enumeration value is " + "only used internally and cannot exist in a binlog!")
+        logger.warn(
+          "MYSQL_TYPE_LONG_BLOB : This enumeration value is " + "only used internally and cannot exist in a binlog!")
 
       case MySQLConstants.MYSQL_TYPE_BLOB =>
         var binary: Array[Byte] = null
         meta match {
           case 1 =>
-            /* TINYBLOB/TINYTEXT */ val len8 = buffer.getUint8
+            /* TINYBLOB/TINYTEXT */
+            val len8 = buffer.getUint8
             binary = new Array[Byte](len8)
             buffer.fillBytes(binary, 0, len8)
 
-
           case 2 =>
-            /* BLOB/TEXT */ val len16 = buffer.getUint16
+            /* BLOB/TEXT */
+            val len16 = buffer.getUint16
             binary = new Array[Byte](len16)
             buffer.fillBytes(binary, 0, len16)
 
-
           case 3 =>
-            /* MEDIUMBLOB/MEDIUMTEXT */ val len24 = buffer.getUint24
+            /* MEDIUMBLOB/MEDIUMTEXT */
+            val len24 = buffer.getUint24
             binary = new Array[Byte](len24)
             buffer.fillBytes(binary, 0, len24)
 
-
           case 4 =>
-            /* LONGBLOB/LONGTEXT */ val len32 = buffer.getUint32.toInt
+            /* LONGBLOB/LONGTEXT */
+            val len32 = buffer.getUint32.toInt
             binary = new Array[Byte](len32)
             buffer.fillBytes(binary, 0, len32)
-
 
           case _ =>
             throw new IllegalArgumentException("!! Unknown BLOB packlen = " + meta)
         }
         value = binary
-
 
       case MySQLConstants.MYSQL_TYPE_VARCHAR =>
       case MySQLConstants.MYSQL_TYPE_VAR_STRING =>
@@ -502,14 +514,12 @@ class RowDataEventParser extends BinlogEventParser with Logging {
         buffer.fillBytes(binary, 0, len)
         value = binary
 
-
       case MySQLConstants.MYSQL_TYPE_STRING =>
         if (len < 256) len = buffer.getUint8
         else len = buffer.getUint16
         val binary = new Array[Byte](len)
         buffer.fillBytes(binary, 0, len)
         value = binary
-
 
       case MySQLConstants.MYSQL_TYPE_JSON =>
         len = buffer.getUint16
@@ -520,7 +530,6 @@ class RowDataEventParser extends BinlogEventParser with Logging {
         jsonValue.toJsonString(builder)
         value = builder.toString
         buffer.position(position + len)
-
 
       case MySQLConstants.MYSQL_TYPE_GEOMETRY =>
         meta match {
@@ -544,9 +553,12 @@ class RowDataEventParser extends BinlogEventParser with Logging {
         buffer.fillBytes(binary, 0, len)
         value = binary
 
-
       case _ =>
-        logger.error(String.format("!! Don't know how to handle column type=%d meta=%d (%04X)", dataType, meta, meta))
+        logger.error(
+          String.format("!! Don't know how to handle column type=%d meta=%d (%04X)",
+                        dataType,
+                        meta,
+                        meta))
         value = null
     }
     value
@@ -583,7 +595,7 @@ class RowDataEventParser extends BinlogEventParser with Logging {
       val result = new StringBuilder(6)
       var len = 6 - sec.length
 
-      while ( {
+      while ({
         len > 0
       }) {
         result.append('0')

@@ -142,6 +142,9 @@ class MysqlQueryExecutor {
   @throws[IOException]
   private def readEofPacket(): Unit = {
     val eof = PacketManager.readNextPacket(channel)
-    if (eof(4) != -2) throw new IOException("EOF Packet is expected, but packet with field_count=" + eof(4) + " is found.")
+    if (eof(4) != -2)
+      throw new IOException(
+        "EOF Packet is expected, but packet with field_count=" + eof(4) + " is found."
+      )
   }
 }

@@ -1,7 +1,4 @@
-
-
 package com.fan.mysql.async.column
-
 
 import scala.concurrent.duration._
 

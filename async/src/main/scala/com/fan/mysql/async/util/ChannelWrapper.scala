@@ -1,5 +1,3 @@
-
-
 package com.fan.mysql.async.util
 
 import java.math.BigInteger
@@ -16,7 +14,7 @@ object ChannelWrapper {
   implicit def bufferToWrapper(buffer: ByteBuf): ChannelWrapper = new ChannelWrapper(buffer)
 
   final val MySQL_NULL = 0xfb
-  final val log = Log.get[ChannelWrapper]
+  final val log        = Log.get[ChannelWrapper]
 
   final val BIGINT_MAX_VALUE: BigInt = BigInt("18446744073709551615")
 }
@@ -54,19 +52,19 @@ class ChannelWrapper(val buffer: ByteBuf) extends AnyVal {
     } else {
       firstByte match {
         case MySQL_NULL => -1
-        case 252 => buffer.readUnsignedShort()
-        case 253 => readLongInt
-        case 254 => buffer.readLong()
-        case _ => throw new UnknownLengthException(firstByte)
+        case 252        => buffer.readUnsignedShort()
+        case 253        => readLongInt
+        case 254        => buffer.readLong()
+        case _          => throw new UnknownLengthException(firstByte)
       }
     }
 
   }
 
   def readLongInt: Int = {
-    val first = buffer.readByte()
+    val first  = buffer.readByte()
     val second = buffer.readByte()
-    val third = buffer.readByte()
+    val third  = buffer.readByte()
 
     (first & 0xff) | ((second & 0xff) << 8) | ((third & 0xff) << 16)
   }
@@ -76,26 +74,34 @@ class ChannelWrapper(val buffer: ByteBuf) extends AnyVal {
       throw new IllegalArgumentException(s"limit exceed: ${buffer.readerIndex() + 6}")
 
     ((buffer.readByte() & 0xff).asInstanceOf[Long] << 32) |
-      ((buffer.readByte() & 0xff).asInstanceOf[Long] << 24) | ((buffer.readByte() & 0xff).asInstanceOf[Long] << 16) |
-      ((buffer.readByte() & 0xff).asInstanceOf[Long] << 8) | (buffer.readByte() & 0xff).asInstanceOf[Long]
+      ((buffer.readByte() & 0xff).asInstanceOf[Long] << 24) | ((buffer.readByte() & 0xff)
+        .asInstanceOf[Long] << 16) |
+      ((buffer.readByte() & 0xff).asInstanceOf[Long] << 8) | (buffer.readByte() & 0xff)
+        .asInstanceOf[Long]
   }
 
   def readUnsignedLong48(): Long = {
     if (buffer.readableBytes() < 6)
       throw new IllegalArgumentException(s"limit exceed: ${buffer.readerIndex() + 6}")
 
-    (buffer.readByte() & 0xff).asInstanceOf[Long] | ((buffer.readByte() & 0xff).asInstanceOf[Long] << 8) |
-      ((buffer.readByte() & 0xff).asInstanceOf[Long] << 16) | ((buffer.readByte() & 0xff).asInstanceOf[Long] << 24) |
-      ((buffer.readByte() & 0xff).asInstanceOf[Long] << 32) | ((buffer.readByte() & 0xff).asInstanceOf[Long] << 40)
+    (buffer.readByte() & 0xff)
+      .asInstanceOf[Long] | ((buffer.readByte() & 0xff).asInstanceOf[Long] << 8) |
+      ((buffer.readByte() & 0xff).asInstanceOf[Long] << 16) | ((buffer.readByte() & 0xff)
+        .asInstanceOf[Long] << 24) |
+      ((buffer.readByte() & 0xff).asInstanceOf[Long] << 32) | ((buffer.readByte() & 0xff)
+        .asInstanceOf[Long] << 40)
   }
 
   def readUnsignedLong48LE(): Long = {
     if (buffer.readableBytes() < 6)
       throw new IllegalArgumentException(s"limit exceed: ${buffer.readerIndex() + 6}")
 
-    ((buffer.readByte() & 0xff).asInstanceOf[Long] << 40) | ((buffer.readByte() & 0xff).asInstanceOf[Long] << 32) |
-      ((buffer.readByte() & 0xff).asInstanceOf[Long] << 24) | ((buffer.readByte() & 0xff).asInstanceOf[Long] << 16) |
-      ((buffer.readByte() & 0xff).asInstanceOf[Long] << 8) | (buffer.readByte() & 0xff).asInstanceOf[Long]
+    ((buffer.readByte() & 0xff).asInstanceOf[Long] << 40) | ((buffer.readByte() & 0xff)
+      .asInstanceOf[Long] << 32) |
+      ((buffer.readByte() & 0xff).asInstanceOf[Long] << 24) | ((buffer.readByte() & 0xff)
+        .asInstanceOf[Long] << 16) |
+      ((buffer.readByte() & 0xff).asInstanceOf[Long] << 8) | (buffer.readByte() & 0xff)
+        .asInstanceOf[Long]
   }
 
   def readUnsignedLong(): BigInt = {
@@ -146,7 +152,7 @@ class ChannelWrapper(val buffer: ByteBuf) extends AnyVal {
 
   def mysqlReadInt(): Int = {
     val first = buffer.readByte()
-    val last = buffer.readByte()
+    val last  = buffer.readByte()
 
     (first & 0xff) | ((last & 0xff) << 8)
   }
@@ -166,34 +172,38 @@ class ChannelWrapper(val buffer: ByteBuf) extends AnyVal {
 
     val begin = buffer.writerIndex()
 
-    buffer.forEachByte(buffer.readerIndex(), len / 8, new ByteProcessor {
-      override def process(flag: Byte): Boolean = {
-        if (flag == 0) {
+    buffer.forEachByte(
+      buffer.readerIndex(),
+      len / 8,
+      new ByteProcessor {
+        override def process(flag: Byte): Boolean = {
+          if (flag == 0) {
+            bit += 8
+            return true
+          }
+
+          if ((flag & 0x01) != 0)
+            bitmap.set(bit)
+          if ((flag & 0x02) != 0)
+            bitmap.set(bit + 1)
+          if ((flag & 0x04) != 0)
+            bitmap.set(bit + 2)
+          if ((flag & 0x08) != 0)
+            bitmap.set(bit + 3)
+          if ((flag & 0x10) != 0)
+            bitmap.set(bit + 4)
+          if ((flag & 0x20) != 0)
+            bitmap.set(bit + 5)
+          if ((flag & 0x40) != 0)
+            bitmap.set(bit + 6)
+          if ((flag & 0x80) != 0)
+            bitmap.set(bit + 7)
+
           bit += 8
-          return true
+          true
         }
-
-        if ((flag & 0x01) != 0)
-          bitmap.set(bit)
-        if ((flag & 0x02) != 0)
-          bitmap.set(bit + 1)
-        if ((flag & 0x04) != 0)
-          bitmap.set(bit + 2)
-        if ((flag & 0x08) != 0)
-          bitmap.set(bit + 3)
-        if ((flag & 0x10) != 0)
-          bitmap.set(bit + 4)
-        if ((flag & 0x20) != 0)
-          bitmap.set(bit + 5)
-        if ((flag & 0x40) != 0)
-          bitmap.set(bit + 6)
-        if ((flag & 0x80) != 0)
-          bitmap.set(bit + 7)
-
-        bit += 8
-        true
       }
-    })
+    )
 
     buffer.writerIndex(begin + len / 8)
   }

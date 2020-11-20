@@ -12,7 +12,9 @@ import io.netty.buffer.ByteBuf
 
 class TableMapEventParser extends FilterableParser with Logging {
 
-  override def parse(buffer: ByteBuf, header: EventHeader, context: BinlogDumpContext): BinlogEvent = {
+  override def parse(buffer: ByteBuf,
+                     header: EventHeader,
+                     context: BinlogDumpContext): BinlogEvent = {
     val event = new TableMapEvent(header)
     val eventPos = buffer.readerIndex()
     val postHeaderLen = context.getFormatDescription.getPostHeaderLen(header.eventType - 1)
@@ -58,33 +60,37 @@ class TableMapEventParser extends FilterableParser with Logging {
     event
   }
 
-  private def decodeFields(buffer: ByteBuf, len: Int, columnCnt: Int, columnInfo: Array[TableMapEvent.ColumnInfo]): Unit = {
+  private def decodeFields(buffer: ByteBuf,
+                           len: Int,
+                           columnCnt: Int,
+                           columnInfo: Array[TableMapEvent.ColumnInfo]): Unit = {
     val limit = buffer.writerIndex()
     buffer.writerIndex(len + buffer.readerIndex())
 
     for (i <- 0 until columnCnt) {
       val info = columnInfo(i)
       info.`type` match {
-        case MySQLConstants.MYSQL_TYPE_TINY_BLOB =>
-        case MySQLConstants.MYSQL_TYPE_BLOB =>
+        case MySQLConstants.MYSQL_TYPE_TINY_BLOB   =>
+        case MySQLConstants.MYSQL_TYPE_BLOB        =>
         case MySQLConstants.MYSQL_TYPE_MEDIUM_BLOB =>
-        case MySQLConstants.MYSQL_TYPE_LONG_BLOB =>
-        case MySQLConstants.MYSQL_TYPE_DOUBLE =>
-        case MySQLConstants.MYSQL_TYPE_FLOAT =>
-        case MySQLConstants.MYSQL_TYPE_GEOMETRY =>
-        case MySQLConstants.MYSQL_TYPE_JSON =>
+        case MySQLConstants.MYSQL_TYPE_LONG_BLOB   =>
+        case MySQLConstants.MYSQL_TYPE_DOUBLE      =>
+        case MySQLConstants.MYSQL_TYPE_FLOAT       =>
+        case MySQLConstants.MYSQL_TYPE_GEOMETRY    =>
+        case MySQLConstants.MYSQL_TYPE_JSON        =>
           /*
            * These types store a single byte.
            */
           info.meta = buffer.readUnsignedByte()
 
-        case MySQLConstants.MYSQL_TYPE_SET =>
+        case MySQLConstants.MYSQL_TYPE_SET  =>
         case MySQLConstants.MYSQL_TYPE_ENUM =>
           /*
            * log_event.h : MYSQL_TYPE_SET & MYSQL_TYPE_ENUM : This enumeration value is
            * only used internally and cannot exist in a binlog.
            */
-          logger.warn("This enumeration value is only used internally " + "and cannot exist in a binlog: type=" + info.`type`)
+          logger.warn(
+            "This enumeration value is only used internally " + "and cannot exist in a binlog: type=" + info.`type`)
 
         case MySQLConstants.MYSQL_TYPE_STRING =>
           /*
@@ -111,7 +117,7 @@ class TableMapEventParser extends FilterableParser with Logging {
 
           info.meta = x
 
-        case MySQLConstants.MYSQL_TYPE_TIME2 =>
+        case MySQLConstants.MYSQL_TYPE_TIME2     =>
         case MySQLConstants.MYSQL_TYPE_DATETIME2 =>
         case MySQLConstants.MYSQL_TYPE_TIMESTAMP2 =>
           info.meta = buffer.readUnsignedByte()

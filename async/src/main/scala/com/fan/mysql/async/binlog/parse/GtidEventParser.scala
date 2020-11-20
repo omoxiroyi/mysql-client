@@ -6,7 +6,9 @@ import com.fan.mysql.async.binlog.{BinlogDumpContext, BinlogEventParser}
 import io.netty.buffer.ByteBuf
 
 class GtidEventParser extends BinlogEventParser {
-  override def parse(buffer: ByteBuf, header: EventHeader, context: BinlogDumpContext): BinlogEvent = {
+  override def parse(buffer: ByteBuf,
+                     header: EventHeader,
+                     context: BinlogDumpContext): BinlogEvent = {
     val event = new GtidLogEvent(header)
 
     buffer.readByte() // commit flag, always true

@@ -12,20 +12,23 @@ import io.netty.buffer.ByteBuf
 import org.apache.commons.lang3.builder.{ToStringBuilder, ToStringStyle}
 
 object QueryEventParser {
+
   /**
-   * The maximum number of updated databases that a status of Query-log-event can
-   * carry. It can redefined within a range [1.. OVER_MAX_DBS_IN_EVENT_MTS].
-   */
+    * The maximum number of updated databases that a status of Query-log-event can
+    * carry. It can redefined within a range [1.. OVER_MAX_DBS_IN_EVENT_MTS].
+    */
   final val MAX_DBS_IN_EVENT_MTS = 16
+
   /**
-   * When the actual number of databases exceeds MAX_DBS_IN_EVENT_MTS the final value of
-   * OVER_MAX_DBS_IN_EVENT_MTS is is put into the mts_accessed_dbs status.
-   */
+    * When the actual number of databases exceeds MAX_DBS_IN_EVENT_MTS the final value of
+    * OVER_MAX_DBS_IN_EVENT_MTS is is put into the mts_accessed_dbs status.
+    */
   final val OVER_MAX_DBS_IN_EVENT_MTS = 254
 
   final val SYSTEM_CHARSET_MBMAXLEN = 3
   final val NAME_CHAR_LEN = 64
-  /* Field/table name length */ final val NAME_LEN: Int = NAME_CHAR_LEN * SYSTEM_CHARSET_MBMAXLEN
+  /* Field/table name length */
+  final val NAME_LEN: Int = NAME_CHAR_LEN * SYSTEM_CHARSET_MBMAXLEN
 
   // Status variable type
   final val Q_FLAGS2_CODE = 0
@@ -48,9 +51,10 @@ object QueryEventParser {
   final val Q_DDL_LOGGED_WITH_XID = 17
   final val Q_DEFAULT_COLLATION_FOR_UTF8MB4 = 18
   final val Q_SQL_REQUIRE_PRIMARY_KEY = 19
+
   /**
-   * FROM MariaDB 5.5.34
-   */
+    * FROM MariaDB 5.5.34
+    */
   final val Q_HRNOW = 128
 
   class StatusVariable {
@@ -124,7 +128,9 @@ class QueryEventParser extends BinlogEventParser with Logging {
 
   private[this] var serverCharset = "UTF-8"
 
-  override def parse(buffer: ByteBuf, header: EventHeader, context: BinlogDumpContext): BinlogEvent = {
+  override def parse(buffer: ByteBuf,
+                     header: EventHeader,
+                     context: BinlogDumpContext): BinlogEvent = {
     val event = new QueryEvent(header)
     event.setThreadId(buffer.readUnsignedInt())
     event.setExecTime(buffer.readUnsignedInt())
@@ -178,7 +184,8 @@ class QueryEventParser extends BinlogEventParser with Logging {
           case Q_TIME_ZONE_CODE =>
             `var`.timezone = buffer.readLengthASCIString()
 
-          case Q_CATALOG_CODE => /* for 5.0.x where 0<=x<=3 masters */
+          case Q_CATALOG_CODE =>
+            /* for 5.0.x where 0<=x<=3 masters */
             val len = buffer.readUnsignedByte()
             `var`.catalog = buffer.readFixedASCIString(len + 1)
 
@@ -202,10 +209,10 @@ class QueryEventParser extends BinlogEventParser with Logging {
             var mtsAccessedDbs = buffer.readUnsignedByte()
 
             /**
-             * Notice, the following check is positive also in case of the master's
-             * MAX_DBS_IN_EVENT_MTS > the slave's one and the event contains e.g the
-             * master's MAX_DBS_IN_EVENT_MTS db:s.
-             */
+              * Notice, the following check is positive also in case of the master's
+              * MAX_DBS_IN_EVENT_MTS > the slave's one and the event contains e.g the
+              * master's MAX_DBS_IN_EVENT_MTS db:s.
+              */
             if (mtsAccessedDbs > MAX_DBS_IN_EVENT_MTS) {
               mtsAccessedDbs = OVER_MAX_DBS_IN_EVENT_MTS.asInstanceOf[Short]
               break
@@ -213,7 +220,7 @@ class QueryEventParser extends BinlogEventParser with Logging {
             }
             `var`.updatedDbNames = new Array[String](mtsAccessedDbs)
             var i = 0
-            while ( {
+            while ({
               i < mtsAccessedDbs && buffer.readerIndex() < end
             }) {
               `var`.updatedDbNames(i) = buffer.readCString(Charset.defaultCharset)
@@ -249,7 +256,8 @@ class QueryEventParser extends BinlogEventParser with Logging {
             /*
              * That's why you must write status vars in growing order of code
              */
-            logger.warn("Query_log_event has unknown status vars (first has code: " + code + "), skipping the rest of them")
+            logger.warn(
+              "Query_log_event has unknown status vars (first has code: " + code + "), skipping the rest of them")
             break()
         }
       }

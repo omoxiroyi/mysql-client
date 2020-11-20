@@ -1,5 +1,3 @@
-
-
 package com.fan.mysql.async.encoder.auth
 
 import java.nio.charset.Charset
@@ -17,6 +15,8 @@ object AuthenticationMethod {
 
 trait AuthenticationMethod {
 
-  def generateAuthentication(charset: Charset, password: Option[String], seed: Array[Byte]): Array[Byte]
+  def generateAuthentication(charset: Charset,
+                             password: Option[String],
+                             seed: Array[Byte]): Array[Byte]
 
 }

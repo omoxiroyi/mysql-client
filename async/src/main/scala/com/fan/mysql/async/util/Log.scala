@@ -1,5 +1,3 @@
-
-
 package com.fan.mysql.async.util
 
 import org.slf4j.{Logger, LoggerFactory}

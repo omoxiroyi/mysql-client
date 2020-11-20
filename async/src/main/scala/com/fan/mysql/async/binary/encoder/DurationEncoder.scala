@@ -1,5 +1,3 @@
-
-
 package com.fan.mysql.async.binary.encoder
 
 import com.fan.mysql.async.column.ColumnTypes
@@ -14,15 +12,15 @@ object DurationEncoder extends BinaryEncoder {
   def encode(value: Any, buffer: ByteBuf): Unit = {
     val duration = value.asInstanceOf[Duration]
 
-    val days = duration.toDays
-    val hoursDuration = duration - days.days
-    val hours = hoursDuration.toHours
+    val days            = duration.toDays
+    val hoursDuration   = duration - days.days
+    val hours           = hoursDuration.toHours
     val minutesDuration = hoursDuration - hours.hours
-    val minutes = minutesDuration.toMinutes
+    val minutes         = minutesDuration.toMinutes
     val secondsDuration = minutesDuration - minutes.minutes
-    val seconds = secondsDuration.toSeconds
-    val microsDuration = secondsDuration - seconds.seconds
-    val micros = microsDuration.toMicros
+    val seconds         = secondsDuration.toSeconds
+    val microsDuration  = secondsDuration - seconds.seconds
+    val micros          = microsDuration.toMicros
 
     val hasMicros = micros != 0
 

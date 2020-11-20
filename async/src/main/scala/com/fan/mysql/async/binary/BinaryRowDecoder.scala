@@ -1,5 +1,3 @@
-
-
 package com.fan.mysql.async.binary
 
 import _root_.io.netty.buffer.ByteBuf
@@ -10,7 +8,7 @@ import com.fan.mysql.async.util.Log
 import scala.collection.mutable.ArrayBuffer
 
 object BinaryRowDecoder {
-  final val log = Log.get[BinaryRowDecoder]
+  final val log          = Log.get[BinaryRowDecoder]
   final val BitMapOffset = 9
 }
 
@@ -30,7 +28,7 @@ class BinaryRowDecoder {
     buffer.readBytes(nullBitMask)
 
     var nullMaskPos = 0
-    var bit = 4
+    var bit         = 4
 
     val row = new ArrayBuffer[Any](columns.size)
 

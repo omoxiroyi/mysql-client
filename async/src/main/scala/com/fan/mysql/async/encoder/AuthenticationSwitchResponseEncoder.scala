@@ -14,14 +14,15 @@ class AuthenticationSwitchResponseEncoder(charset: Charset) extends MessageEncod
     val switch = message.asInstanceOf[AuthenticationSwitchResponse]
 
     val method = switch.request.method
-    val authenticator = AuthenticationMethod.Availables.getOrElse(
-      method, {
-        throw new UnsupportedAuthenticationMethodException(method)
-      })
+    val authenticator = AuthenticationMethod.Availables.getOrElse(method, {
+      throw new UnsupportedAuthenticationMethodException(method)
+    })
 
     val buffer = ByteBufferUtils.packetBuffer()
 
-    val bytes = authenticator.generateAuthentication(charset, switch.password, switch.request.seed.getBytes(charset))
+    val bytes = authenticator.generateAuthentication(charset,
+                                                     switch.password,
+                                                     switch.request.seed.getBytes(charset))
     buffer.writeBytes(bytes)
 
     buffer

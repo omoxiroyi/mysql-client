@@ -12,12 +12,13 @@ object PacketManager {
   @throws[IOException]
   def readNextPacket(ch: SocketChannel): Array[Byte] = {
     val header = readHeader(ch, HEADER_LENGTH)
-    val body = readBytes(ch, header.packetBodyLength)
+    val body   = readBytes(ch, header.packetBodyLength)
     mergeBytes(header.toBytes, body)
   }
 
   @throws[IOException]
-  def readHeader(ch: SocketChannel, len: Int): HeaderPacket = HeaderPacket.fromBytes(readBytes(ch, len))
+  def readHeader(ch: SocketChannel, len: Int): HeaderPacket =
+    HeaderPacket.fromBytes(readBytes(ch, len))
 
   @throws[IOException]
   def readBytesAsBuffer(ch: SocketChannel, len: Int): ByteBuffer = {
@@ -45,13 +46,11 @@ object PacketManager {
     }
   }
 
-  /**
-   * Since We r using blocking IO, so we will just write once and assert the
-   * length to simplify the read operation.<br>
-   * If the block write doesn't work as we expected, we will change this
-   * implementation as per the result.
-   *
-   */
+  /** Since We r using blocking IO, so we will just write once and assert the
+    * length to simplify the read operation.<br>
+    * If the block write doesn't work as we expected, we will change this
+    * implementation as per the result.
+    */
   @throws[IOException]
   def write(ch: SocketChannel, src: Array[ByteBuffer]): Unit = {
     ch.write(src)

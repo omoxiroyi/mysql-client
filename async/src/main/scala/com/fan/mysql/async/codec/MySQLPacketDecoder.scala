@@ -3,10 +3,13 @@ package com.fan.mysql.async.codec
 import java.nio.charset.Charset
 import java.util.concurrent.atomic.AtomicInteger
 
-import com.fan.mysql.async.binlog.event.BinlogEvent
 import com.fan.mysql.async.binlog.{BinlogDumpContext, BinlogEventDecoder}
 import com.fan.mysql.async.decoder._
-import com.fan.mysql.async.exceptions.{BufferNotFullyConsumedException, NegativeMessageSizeException, ParserNotAvailableException}
+import com.fan.mysql.async.exceptions.{
+  BufferNotFullyConsumedException,
+  NegativeMessageSizeException,
+  ParserNotAvailableException
+}
 import com.fan.mysql.async.message.server._
 import com.fan.mysql.async.util.ByteBufferUtils._
 import com.fan.mysql.async.util.ChannelWrapper._
@@ -18,34 +21,35 @@ import org.slf4j.Logger
 
 class MySQLPacketDecoder(charset: Charset, connectionId: String) extends ByteToMessageDecoder {
 
-  private[this] final val log: Logger = Log.getByName(s"[packet-decoder]$connectionId")
+  private[this] final val log: Logger                  = Log.getByName(s"[packet-decoder]$connectionId")
   private[this] final val messagesCount: AtomicInteger = new AtomicInteger()
 
   // decoder
   private[this] final val errorDecoder: ErrorDecoder = new ErrorDecoder(charset)
-  private[this] final val okDecoder = new OkDecoder(charset)
-  private[this] final val handshakeDecoder = new HandshakeV10Decoder(charset)
+  private[this] final val okDecoder                  = new OkDecoder(charset)
+  private[this] final val handshakeDecoder           = new HandshakeV10Decoder(charset)
+  private[this] final val rowDecoder                 = new ResultSetRowDecoder(charset)
 
-  private[this] final val columnDecoder = new ColumnDefinitionDecoder(charset, new DecoderRegistry(charset))
-  private[this] final val rowDecoder = new ResultSetRowDecoder(charset)
-  private[this] final val preparedStatementPrepareDecoder = new PreparedStatementPrepareResponseDecoder()
+  private[this] final val columnDecoder =
+    new ColumnDefinitionDecoder(charset, new DecoderRegistry(charset))
+  private[this] final val preparedStatementPrepareDecoder =
+    new PreparedStatementPrepareResponseDecoder()
 
-  private[codec] var processingColumns = false
-  private[codec] var processingParams = false
-  private[codec] var isInQuery = false
-  private[codec] var isInDumping = false
-  private[codec] var isPreparedStatementPrepare = false
-  private[codec] var isPreparedStatementExecute = false
+  private[codec] var processingColumns              = false
+  private[codec] var processingParams               = false
+  private[codec] var isInQuery                      = false
+  private[codec] var isInDumping                    = false
+  private[codec] var isPreparedStatementPrepare     = false
+  private[codec] var isPreparedStatementExecute     = false
   private[codec] var isPreparedStatementExecuteRows = false
-  private[codec] var hasDoneHandshake = false
+  private[codec] var hasDoneHandshake               = false
 
-  private[codec] var totalParams = 0L
-  private[codec] var processedParams = 0L
-  private[codec] var totalColumns = 0L
+  private[codec] var totalParams      = 0L
+  private[codec] var processedParams  = 0L
+  private[codec] var totalColumns     = 0L
   private[codec] var processedColumns = 0L
 
-  private[codec] var BinlogContext: BinlogDumpContext = _
-
+  private[codec] var BinlogContext: BinlogDumpContext       = _
   private[codec] var BinlogEventDecoder: BinlogEventDecoder = _
 
   private[this] var hasReadColumnsCount = false
@@ -75,9 +79,11 @@ class MySQLPacketDecoder(charset: Charset, connectionId: String) extends ByteToM
         val slice = buffer.readSlice(size)
 
         if (log.isTraceEnabled) {
-          log.trace(s"Reading message type $messageType - " +
-            s"(count=$messagesCount,hasDoneHandshake=$hasDoneHandshake,size=$size,isInQuery=$isInQuery,processingColumns=$processingColumns,processingParams=$processingParams,processedColumns=$processedColumns,processedParams=$processedParams)" +
-            s"\n${BufferDumper.dumpAsHex(slice)}}")
+          log.trace(
+            s"Reading message type $messageType - " +
+              s"(count=$messagesCount,hasDoneHandshake=$hasDoneHandshake,size=$size,isInQuery=$isInQuery,processingColumns=$processingColumns,processingParams=$processingParams,processedColumns=$processedColumns,processedParams=$processedParams)" +
+              s"\n${BufferDumper.dumpAsHex(slice)}}"
+          )
         }
 
         slice.readByte()
@@ -104,10 +110,13 @@ class MySQLPacketDecoder(charset: Charset, connectionId: String) extends ByteToM
     }
   }
 
-  /**
-   * Apart from handleCommonFlow method to make code clear.
-   */
-  private def handleBinlogEvent(messageType: Byte, slice: ByteBuf, out: java.util.List[Object]): Unit = {
+  /** Apart from handleCommonFlow method to make code clear.
+    */
+  private def handleBinlogEvent(
+      messageType: Byte,
+      slice: ByteBuf,
+      out: java.util.List[Object]
+  ): Unit = {
     val decoder = messageType match {
       case ServerMessage.Error =>
         this.clear()
@@ -124,13 +133,16 @@ class MySQLPacketDecoder(charset: Charset, connectionId: String) extends ByteToM
     out.add(msg)
   }
 
-  private def handleCommonFlow(messageType: Byte, slice: ByteBuf, out: java.util.List[Object]): Unit = {
+  private def handleCommonFlow(
+      messageType: Byte,
+      slice: ByteBuf,
+      out: java.util.List[Object]
+  ): Unit = {
     val decoder = messageType match {
       case ServerMessage.Error =>
         this.clear()
         this.errorDecoder
       case ServerMessage.EOF =>
-
         if (this.processingParams && this.totalParams > 0) {
           this.processingParams = false
           if (this.totalColumns == 0) {
@@ -159,7 +171,6 @@ class MySQLPacketDecoder(charset: Charset, connectionId: String) extends ByteToM
           }
         }
       case _ =>
-
         if (this.isInQuery) {
           null
         } else {
@@ -170,7 +181,11 @@ class MySQLPacketDecoder(charset: Charset, connectionId: String) extends ByteToM
     doDecoding(decoder, slice, out)
   }
 
-  private def doDecoding(decoder: MessageDecoder, slice: ByteBuf, out: java.util.List[Object]): Unit = {
+  private def doDecoding(
+      decoder: MessageDecoder,
+      slice: ByteBuf,
+      out: java.util.List[Object]
+  ): Unit = {
     if (decoder == null) {
       slice.readerIndex(slice.readerIndex() - 1)
       val result = decodeQueryResult(slice)

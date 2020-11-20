@@ -7,7 +7,9 @@ import io.netty.buffer.ByteBuf
 
 class XidEventParser extends BinlogEventParser {
 
-  override def parse(buffer: ByteBuf, header: EventHeader, context: BinlogDumpContext): BinlogEvent = {
+  override def parse(buffer: ByteBuf,
+                     header: EventHeader,
+                     context: BinlogDumpContext): BinlogEvent = {
     val xid = buffer.readLong()
     val event = new XidEvent(header)
     event.setXid(xid)

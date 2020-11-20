@@ -1,5 +1,3 @@
-
-
 package com.fan.mysql.async.general
 
 import com.fan.mysql.async.db.{ResultSet, RowData}
@@ -8,19 +6,15 @@ import org.slf4j.Logger
 
 import scala.collection.mutable.ArrayBuffer
 
-
 object MutableResultSet {
   val log: Logger = Log.get[MutableResultSet[Nothing]]
 }
 
-class MutableResultSet[T <: ColumnData](
-                                         val columnTypes: IndexedSeq[T]) extends ResultSet {
+class MutableResultSet[T <: ColumnData](val columnTypes: IndexedSeq[T]) extends ResultSet {
 
   private val rows = new ArrayBuffer[RowData]()
-  private val columnMapping: Map[String, Int] = this.columnTypes.indices.map(
-    index =>
-      (this.columnTypes(index).name, index)).toMap
-
+  private val columnMapping: Map[String, Int] =
+    this.columnTypes.indices.map(index => (this.columnTypes(index).name, index)).toMap
 
   val columnNames: IndexedSeq[String] = this.columnTypes.map(c => c.name)
 

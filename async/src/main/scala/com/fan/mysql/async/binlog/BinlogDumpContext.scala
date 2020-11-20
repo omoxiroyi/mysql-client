@@ -11,7 +11,8 @@ class BinlogDumpContext() {
   private[this] var timeZone: String = _
   private[this] var binlogFileName: String = _
   private[this] var binlogPosition: Long = 0L
-  private[this] var formatDescription = new FormatDescriptionEvent(MySQLConstants.BINLOG_CHECKSUM_ALG_OFF)
+  private[this] var formatDescription = new FormatDescriptionEvent(
+    MySQLConstants.BINLOG_CHECKSUM_ALG_OFF)
 
   private[this] val tableMapEvents = new util.HashMap[Long, TableMapEvent]
 

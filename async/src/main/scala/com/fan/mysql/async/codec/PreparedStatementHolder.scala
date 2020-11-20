@@ -1,14 +1,15 @@
-
-
 package com.fan.mysql.async.codec
 
 import com.fan.mysql.async.message.server.{ColumnDefinitionMessage, PreparedStatementPrepareResponse}
 
 import scala.collection.mutable.ArrayBuffer
 
-class PreparedStatementHolder(val statement: String, val message: PreparedStatementPrepareResponse) {
+class PreparedStatementHolder(
+    val statement: String,
+    val message: PreparedStatementPrepareResponse
+) {
 
-  val columns = new ArrayBuffer[ColumnDefinitionMessage]
+  val columns    = new ArrayBuffer[ColumnDefinitionMessage]
   val parameters = new ArrayBuffer[ColumnDefinitionMessage]
 
   def statementId: Array[Byte] = message.statementId

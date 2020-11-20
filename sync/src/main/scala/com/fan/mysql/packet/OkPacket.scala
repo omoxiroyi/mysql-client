@@ -4,50 +4,49 @@ import java.io.UnsupportedEncodingException
 
 import com.fan.mysql.util.MySQLPacketBuffer
 
-/**
- * From server to client in response to command, if no error and no result set.
- *
- * <pre>
- * VERSION 4.1
- * Bytes                       Name
- * -----                       ----
- * 1   (Length Coded Binary)   field_count, always = 0
- * 1-9 (Length Coded Binary)   affected_rows
- * 1-9 (Length Coded Binary)   insert_id
- * 2                           server_status
- * 2                           warning_count
- * n   (until end of packet)   message
- *
- * field_count:     always = 0
- *
- * affected_rows:   = number of rows affected by INSERT/UPDATE/DELETE
- *
- * insert_id:       If the statement generated any AUTO_INCREMENT number,
- * it is returned here. Otherwise this field contains 0.
- * Note: when using for example a multiple row INSERT the
- * insert_id will be from the first row inserted, not from
- * last.
- *
- * server_status:   = The client can use this to check if the
- * command was inside a transaction.
- *
- * warning_count:   number of warnings
- *
- * message:         For example, after a multi-line INSERT, message might be
- * &quot;Records: 3 Duplicates: 0 Warnings: 0&quot;
- * </pre>
- *
- * @see https://dev.mysql.com/doc/internals/en/packet-OK_Packet.html
- * @author fan
- */
+/** From server to client in response to command, if no error and no result set.
+  *
+  * <pre>
+  * VERSION 4.1
+  * Bytes                       Name
+  * -----                       ----
+  * 1   (Length Coded Binary)   field_count, always = 0
+  * 1-9 (Length Coded Binary)   affected_rows
+  * 1-9 (Length Coded Binary)   insert_id
+  * 2                           server_status
+  * 2                           warning_count
+  * n   (until end of packet)   message
+  *
+  * field_count:     always = 0
+  *
+  * affected_rows:   = number of rows affected by INSERT/UPDATE/DELETE
+  *
+  * insert_id:       If the statement generated any AUTO_INCREMENT number,
+  * it is returned here. Otherwise this field contains 0.
+  * Note: when using for example a multiple row INSERT the
+  * insert_id will be from the first row inserted, not from
+  * last.
+  *
+  * server_status:   = The client can use this to check if the
+  * command was inside a transaction.
+  *
+  * warning_count:   number of warnings
+  *
+  * message:         For example, after a multi-line INSERT, message might be
+  * &quot;Records: 3 Duplicates: 0 Warnings: 0&quot;
+  * </pre>
+  *
+  * @see https://dev.mysql.com/doc/internals/en/packet-OK_Packet.html
+  * @author fan
+  */
 class OkPacket extends MySQLPacket {
 
-  var fieldCount: Byte = OkPacket.FIELD_COUNT
+  var fieldCount: Byte   = OkPacket.FIELD_COUNT
   var affectedRows: Long = _
-  var insertId: Long = _
-  var serverStatus: Int = _
-  var warningCount: Int = _
-  var message: String = _
+  var insertId: Long     = _
+  var serverStatus: Int  = _
+  var warningCount: Int  = _
+  var message: String    = _
 
   override def init(buffer: MySQLPacketBuffer, charset: String): Unit = {
     super.init(buffer, charset)
@@ -76,8 +75,9 @@ class OkPacket extends MySQLPacket {
     size += 4
     if (this.message != null)
       try {
-        val msg = if (this.charset == null) message.getBytes
-        else message.getBytes(this.charset)
+        val msg =
+          if (this.charset == null) message.getBytes
+          else message.getBytes(this.charset)
         size += MySQLPacketBuffer.getLength(msg)
       } catch {
         case _: UnsupportedEncodingException =>

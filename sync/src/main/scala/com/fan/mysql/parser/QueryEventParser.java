@@ -133,7 +133,7 @@ public class QueryEventParser implements BinlogEventParser {
                 case Q_UPDATED_DB_NAMES:
                     int mtsAccessedDbs = buffer.getUint8();
                     if (mtsAccessedDbs > MAX_DBS_IN_EVENT_MTS) {
-						break;
+                        break;
                     }
                     var.updatedDbNames = new String[mtsAccessedDbs];
                     for (int i = 0; i < mtsAccessedDbs && buffer.position() < end; i++) {

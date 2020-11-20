@@ -12,9 +12,8 @@ import com.fan.mysql.util._
 import org.apache.commons.lang3.exception.ExceptionUtils
 
 //noinspection DuplicatedCode
-class MysqlConnector(address: InetSocketAddress,
-                     username: String,
-                     password: String) extends Logging {
+class MysqlConnector(address: InetSocketAddress, username: String, password: String)
+    extends Logging {
 
   private[this] final val soTimeout = 30 * 1000
 
@@ -39,9 +38,8 @@ class MysqlConnector(address: InetSocketAddress,
 
   var dumping = false
 
-  /**
-   * Connect to a MySQL server and do handshake.
-   */
+  /** Connect to a MySQL server and do handshake.
+    */
   def connect(): Unit = {
     if (connected.compareAndSet(false, true)) {
       try {
@@ -77,7 +75,9 @@ class MysqlConnector(address: InetSocketAddress,
     packet.init(new MySQLPacketBuffer(handshakeData), null)
 
     this.connectionId = packet.connectionId
-    logger.debug("handshake initialization packet received, prepare the client authentication packet to send")
+    logger.debug(
+      "handshake initialization packet received, prepare the client authentication packet to send"
+    )
 
     val authPacket = new AuthPacket
     authPacket.packetId = (handshakeData(3) + 1).toByte
@@ -107,12 +107,10 @@ class MysqlConnector(address: InetSocketAddress,
         val error: ErrorPacket = new ErrorPacket
         error.init(new MySQLPacketBuffer(authResponseData), getCharset)
         throw new IOException("Error when doing client authentication:" + error.message)
-      }
-      else {
+      } else {
         if (authResponseData(4) == -2) {
           handleScramble323Packet(authResponseData(3))
-        }
-        else {
+        } else {
           throw new IOException(s"Unexpected packet with field_count=${authResponseData(4)}")
         }
       }
@@ -128,10 +126,11 @@ class MysqlConnector(address: InetSocketAddress,
         logger.debug(s"disConnect MysqlConnection to $address...")
       } catch {
         case e: Exception =>
-          throw new IOException(s"disconnect ${this.address} failure:${ExceptionUtils.getStackTrace(e)}")
+          throw new IOException(
+            s"disconnect ${this.address} failure:${ExceptionUtils.getStackTrace(e)}"
+          )
       }
-    }
-    else logger.info(s"the channel ${this.address} is not connected")
+    } else logger.info(s"the channel ${this.address} is not connected")
   }
 
   @throws[IOException]
@@ -176,8 +175,10 @@ class MysqlConnector(address: InetSocketAddress,
     // load local file
     flag |= Capabilities.CLIENT_LOCAL_FILES
     if (packet.protocolVersion > 9) flag |= Capabilities.CLIENT_LONG_PASSWORD
-    if ((packet.lowerCapabilities & Capabilities.CLIENT_LONG_FLAG) != 0) flag |= Capabilities.CLIENT_LONG_FLAG
-    if ((packet.lowerCapabilities & Capabilities.CLIENT_SECURE_CONNECTION) != 0) flag |= Capabilities.CLIENT_SECURE_CONNECTION
+    if ((packet.lowerCapabilities & Capabilities.CLIENT_LONG_FLAG) != 0)
+      flag |= Capabilities.CLIENT_LONG_FLAG
+    if ((packet.lowerCapabilities & Capabilities.CLIENT_SECURE_CONNECTION) != 0)
+      flag |= Capabilities.CLIENT_SECURE_CONNECTION
     flag
   }
 
@@ -195,7 +196,6 @@ class MysqlConnector(address: InetSocketAddress,
     val authResponseData = PacketManager.readNextPacket(channel)
     authResponseData(4) match {
       case 0 =>
-
       case -1 =>
         val error: ErrorPacket = new ErrorPacket
         error.init(new MySQLPacketBuffer(authResponseData), getCharset)

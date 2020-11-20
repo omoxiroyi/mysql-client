@@ -19,7 +19,6 @@ package com.fan.mysql.async.message.server
 
 import com.fan.mysql.async.db.KindedMessage
 
-
 object ServerMessage {
 
   final val ServerProtocolVersion = 10

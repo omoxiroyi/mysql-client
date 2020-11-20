@@ -7,7 +7,6 @@ import com.fan.mysql.async.util.ChannelWrapper._
 import com.fan.mysql.async.util.Log.Logging
 import io.netty.buffer.ByteBuf
 
-
 object FormatDescriptionEventParser {
   final val LOG_EVENT_HEADER_LEN = 19
 
@@ -19,7 +18,9 @@ object FormatDescriptionEventParser {
   final val EVENT_HEADER_LEN_OFFSET: Int = CREATE_TIMESTAMP_OFFSET + CREATE_TIMESTAMP_LEN
 
   final val checksumVersionSplit: Array[Int] = Array(5, 6, 1)
-  final val checksumVersionProduct: Long = (checksumVersionSplit(0) * 256 + checksumVersionSplit(1)) * 256 + checksumVersionSplit(2)
+  final val checksumVersionProduct
+    : Long = (checksumVersionSplit(0) * 256 + checksumVersionSplit(1)) * 256 + checksumVersionSplit(
+    2)
 
   def doServerVersionSplit(serverVersion: String, versionSplit: Array[Int]): Unit = {
     val split = serverVersion.split("\\.")
@@ -27,8 +28,7 @@ object FormatDescriptionEventParser {
       versionSplit(0) = 0
       versionSplit(1) = 0
       versionSplit(2) = 0
-    }
-    else {
+    } else {
       var j = 0
       for (i <- 0 to 2) {
         val str = split(i)
@@ -51,14 +51,17 @@ object FormatDescriptionEventParser {
     }
   }
 
-  def versionProduct(versionSplit: Array[Int]): Long = (versionSplit(0) * 256 + versionSplit(1)) * 256 + versionSplit(2)
+  def versionProduct(versionSplit: Array[Int]): Long =
+    (versionSplit(0) * 256 + versionSplit(1)) * 256 + versionSplit(2)
 }
 
 class FormatDescriptionEventParser extends BinlogEventParser with Logging {
 
   import FormatDescriptionEventParser._
 
-  override def parse(buffer: ByteBuf, header: EventHeader, context: BinlogDumpContext): BinlogEvent = {
+  override def parse(buffer: ByteBuf,
+                     header: EventHeader,
+                     context: BinlogDumpContext): BinlogEvent = {
     val event = new FormatDescriptionEvent(header)
 
     val eventPos = buffer.readerIndex()

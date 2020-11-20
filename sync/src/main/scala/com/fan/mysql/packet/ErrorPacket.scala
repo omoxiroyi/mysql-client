@@ -4,35 +4,34 @@ import java.io.UnsupportedEncodingException
 
 import com.fan.mysql.util.MySQLPacketBuffer
 
-/**
- * From server to client in response to command, if error.
- *
- * <pre>
- * Bytes                       Name
- * -----                       ----
- * 1                           field_count, always = 0xff
- * 2                           errno
- * 1                           (sqlstate marker), always '#'
- * 5                           sqlstate (5 characters)
- * n                           message
- *
- * &#64;see http://forge.mysql.com/wiki/MySQL_Internals_ClientServer_Protocol#Error_Packet
- * </pre>
- *
- * @author fan
- */
+/** From server to client in response to command, if error.
+  *
+  * <pre>
+  * Bytes                       Name
+  * -----                       ----
+  * 1                           field_count, always = 0xff
+  * 2                           errno
+  * 1                           (sqlstate marker), always '#'
+  * 5                           sqlstate (5 characters)
+  * n                           message
+  *
+  * &#64;see http://forge.mysql.com/wiki/MySQL_Internals_ClientServer_Protocol#Error_Packet
+  * </pre>
+  *
+  * @author fan
+  */
 class ErrorPacket extends MySQLPacket {
 
   val FIELD_COUNT: Byte = 0xff.toByte
 
-  private[this] val SQLSTATE_MARKER: Byte = '#'.toByte
+  private[this] val SQLSTATE_MARKER: Byte    = '#'.toByte
   private[this] val DEFAULT_SQLSTATE: String = "42000"
 
   var fieldCount: Byte = FIELD_COUNT
-  var errNo = 0
-  var mark: Byte = SQLSTATE_MARKER
+  var errNo            = 0
+  var mark: Byte       = SQLSTATE_MARKER
   var sqlState: String = DEFAULT_SQLSTATE
-  var message: String = _
+  var message: String  = _
 
   override def init(buffer: MySQLPacketBuffer, charset: String): Unit = {
     super.init(buffer, charset)
@@ -60,9 +59,8 @@ class ErrorPacket extends MySQLPacket {
     if (message != null)
       try {
         size += (if (this.charset == null) message.getBytes.length
-        else message.getBytes(this.charset).length)
-      }
-      catch {
+                 else message.getBytes(this.charset).length)
+      } catch {
         case _: UnsupportedEncodingException =>
       }
     size

@@ -1,5 +1,3 @@
-
-
 package com.fan.mysql.async.column
 
 object ByteDecoder extends ColumnDecoder {

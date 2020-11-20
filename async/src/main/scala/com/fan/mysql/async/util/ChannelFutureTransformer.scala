@@ -1,5 +1,3 @@
-
-
 package com.fan.mysql.async.util
 
 import com.fan.mysql.async.exceptions.CanceledChannelFutureException

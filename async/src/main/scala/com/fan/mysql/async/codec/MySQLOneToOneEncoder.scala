@@ -19,23 +19,29 @@ object MySQLOneToOneEncoder {
 }
 
 class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper)
-  extends MessageToMessageEncoder[ClientMessage](classOf[ClientMessage]) {
+    extends MessageToMessageEncoder[ClientMessage](classOf[ClientMessage]) {
 
   import MySQLOneToOneEncoder.log
 
-  private[this] final val handshakeResponseEncoder = new HandshakeResponseEncoder(charset, charsetMapper)
-  private[this] final val queryEncoder = new QueryMessageEncoder(charset)
-  private[this] final val rowEncoder = new BinaryRowEncoder(charset)
+  private[this] final val handshakeResponseEncoder =
+    new HandshakeResponseEncoder(charset, charsetMapper)
+  private[this] final val queryEncoder   = new QueryMessageEncoder(charset)
+  private[this] final val rowEncoder     = new BinaryRowEncoder(charset)
   private[this] final val prepareEncoder = new PreparedStatementPrepareEncoder(charset)
   private[this] final val executeEncoder = new PreparedStatementExecuteEncoder(rowEncoder)
-  private[this] final val authenticationSwitchEncoder = new AuthenticationSwitchResponseEncoder(charset)
-  private[this] final val binlogDumpEncoder = new BinlogDumpMessageEncoder(charset)
+  private[this] final val authenticationSwitchEncoder = new AuthenticationSwitchResponseEncoder(
+    charset
+  )
+  private[this] final val binlogDumpEncoder     = new BinlogDumpMessageEncoder(charset)
   private[this] final val binlogDumpGTIDEncoder = new BinlogDumpGTIDMessageEncoder(charset)
-
 
   private[this] var sequence = 1
 
-  def encode(ctx: ChannelHandlerContext, message: ClientMessage, out: java.util.List[Object]): Unit = {
+  def encode(
+      ctx: ChannelHandlerContext,
+      message: ClientMessage,
+      out: java.util.List[Object]
+  ): Unit = {
     val encoder = (message.kind: @switch) match {
       case ClientMessage.ClientProtocolVersion => this.handshakeResponseEncoder
       case ClientMessage.Quit =>
@@ -69,7 +75,9 @@ class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper)
     sequence += 1
 
     if (log.isTraceEnabled) {
-      log.trace(s"Writing message ${message.getClass.getName} - \n${BufferDumper.dumpAsHex(result)}")
+      log.trace(
+        s"Writing message ${message.getClass.getName} - \n${BufferDumper.dumpAsHex(result)}"
+      )
     }
 
     out.add(result)

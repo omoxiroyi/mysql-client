@@ -1,5 +1,3 @@
-
-
 package com.fan.mysql.async.message.server
 
 import io.netty.buffer.ByteBuf
@@ -7,9 +5,7 @@ import io.netty.buffer.ByteBuf
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
-class ResultSetRowMessage
-  extends ServerMessage(ServerMessage.Row)
-    with mutable.Buffer[ByteBuf] {
+class ResultSetRowMessage extends ServerMessage(ServerMessage.Row) with mutable.Buffer[ByteBuf] {
 
   private val buffer = new ArrayBuffer[ByteBuf]()
 
@@ -57,7 +53,9 @@ class ResultSetRowMessage
     this.buffer.remove(idx, count)
   }
 
-  override def patchInPlace(from: Int, patch: IterableOnce[ByteBuf], replaced: Int): ResultSetRowMessage.this.type = {
+  override def patchInPlace(from: Int,
+                            patch: IterableOnce[ByteBuf],
+                            replaced: Int): ResultSetRowMessage.this.type = {
     this.buffer.patchInPlace(from, patch, replaced)
     this
   }

@@ -23,9 +23,8 @@ object LittleEndianByteBufAllocator {
   val INSTANCE: LittleEndianByteBufAllocator = new LittleEndianByteBufAllocator
 }
 
-/**
- * Allocates ByteBuf which have LITTLE_ENDIAN order.
- */
+/** Allocates ByteBuf which have LITTLE_ENDIAN order.
+  */
 class LittleEndianByteBufAllocator extends ByteBufAllocator {
   private val allocator = new UnpooledByteBufAllocator(false)
 
@@ -35,39 +34,49 @@ class LittleEndianByteBufAllocator extends ByteBufAllocator {
 
   def buffer(initialCapacity: Int): ByteBuf = littleEndian(allocator.buffer(initialCapacity))
 
-  def buffer(initialCapacity: Int, maxCapacity: Int): ByteBuf = littleEndian(allocator.buffer(initialCapacity, maxCapacity))
+  def buffer(initialCapacity: Int, maxCapacity: Int): ByteBuf =
+    littleEndian(allocator.buffer(initialCapacity, maxCapacity))
 
   def ioBuffer(): ByteBuf = littleEndian(allocator.ioBuffer())
 
   def ioBuffer(initialCapacity: Int): ByteBuf = littleEndian(allocator.ioBuffer(initialCapacity))
 
-  def ioBuffer(initialCapacity: Int, maxCapacity: Int): ByteBuf = littleEndian(allocator.ioBuffer(initialCapacity, maxCapacity))
+  def ioBuffer(initialCapacity: Int, maxCapacity: Int): ByteBuf =
+    littleEndian(allocator.ioBuffer(initialCapacity, maxCapacity))
 
   def heapBuffer(): ByteBuf = littleEndian(allocator.heapBuffer())
 
-  def heapBuffer(initialCapacity: Int): ByteBuf = littleEndian(allocator.heapBuffer(initialCapacity))
+  def heapBuffer(initialCapacity: Int): ByteBuf =
+    littleEndian(allocator.heapBuffer(initialCapacity))
 
-  def heapBuffer(initialCapacity: Int, maxCapacity: Int): ByteBuf = littleEndian(allocator.heapBuffer(initialCapacity, maxCapacity))
+  def heapBuffer(initialCapacity: Int, maxCapacity: Int): ByteBuf =
+    littleEndian(allocator.heapBuffer(initialCapacity, maxCapacity))
 
   def directBuffer(): ByteBuf = littleEndian(allocator.directBuffer())
 
-  def directBuffer(initialCapacity: Int): ByteBuf = littleEndian(allocator.directBuffer(initialCapacity))
+  def directBuffer(initialCapacity: Int): ByteBuf =
+    littleEndian(allocator.directBuffer(initialCapacity))
 
-  def directBuffer(initialCapacity: Int, maxCapacity: Int): ByteBuf = littleEndian(allocator.directBuffer(initialCapacity, maxCapacity))
+  def directBuffer(initialCapacity: Int, maxCapacity: Int): ByteBuf =
+    littleEndian(allocator.directBuffer(initialCapacity, maxCapacity))
 
   def compositeBuffer(): CompositeByteBuf = allocator.compositeBuffer()
 
-  def compositeBuffer(maxNumComponents: Int): CompositeByteBuf = allocator.compositeBuffer(maxNumComponents)
+  def compositeBuffer(maxNumComponents: Int): CompositeByteBuf =
+    allocator.compositeBuffer(maxNumComponents)
 
   def compositeHeapBuffer(): CompositeByteBuf = allocator.compositeHeapBuffer()
 
-  def compositeHeapBuffer(maxNumComponents: Int): CompositeByteBuf = allocator.compositeHeapBuffer(maxNumComponents)
+  def compositeHeapBuffer(maxNumComponents: Int): CompositeByteBuf =
+    allocator.compositeHeapBuffer(maxNumComponents)
 
   def compositeDirectBuffer(): CompositeByteBuf = allocator.compositeDirectBuffer()
 
-  def compositeDirectBuffer(maxNumComponents: Int): CompositeByteBuf = allocator.compositeDirectBuffer(maxNumComponents)
+  def compositeDirectBuffer(maxNumComponents: Int): CompositeByteBuf =
+    allocator.compositeDirectBuffer(maxNumComponents)
 
-  def calculateNewCapacity(minNewCapacity: Int, maxCapacity: Int): Int = allocator.calculateNewCapacity(minNewCapacity, maxCapacity)
+  def calculateNewCapacity(minNewCapacity: Int, maxCapacity: Int): Int =
+    allocator.calculateNewCapacity(minNewCapacity, maxCapacity)
 
   //noinspection ScalaDeprecation
   private def littleEndian(b: ByteBuf) = b.order(ByteOrder.LITTLE_ENDIAN)

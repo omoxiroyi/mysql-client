@@ -4,6 +4,4 @@ object SemiSyncAckPacket {
   final val magicNum = 0xef.asInstanceOf[Byte]
 }
 
-class SemiSyncAckPacket {
-
-}
+class SemiSyncAckPacket {}

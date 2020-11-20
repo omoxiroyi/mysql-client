@@ -1,5 +1,3 @@
-
-
 package com.fan.mysql.async.binary.encoder
 
 import java.nio.charset.Charset

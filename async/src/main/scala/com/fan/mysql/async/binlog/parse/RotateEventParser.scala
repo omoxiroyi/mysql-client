@@ -8,7 +8,9 @@ import io.netty.buffer.ByteBuf
 
 class RotateEventParser extends BinlogEventParser {
 
-  override def parse(buffer: ByteBuf, header: EventHeader, context: BinlogDumpContext): BinlogEvent = {
+  override def parse(buffer: ByteBuf,
+                     header: EventHeader,
+                     context: BinlogDumpContext): BinlogEvent = {
     val position = buffer.readLong()
     val fileLen = buffer.writerIndex() - buffer.readerIndex()
     val file = buffer.readFixedASCIString(fileLen)

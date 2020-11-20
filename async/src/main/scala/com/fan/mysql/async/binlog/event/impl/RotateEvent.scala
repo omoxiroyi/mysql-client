@@ -4,7 +4,7 @@ import com.fan.mysql.async.binlog.event.{AbstractEvent, EventHeader}
 
 class RotateEvent(header: EventHeader) extends AbstractEvent(header) {
   private[this] var binlogPosition: Long = _
-  private[this] var binlogFile: String = _
+  private[this] var binlogFile: String   = _
 
   def getBinlogPosition: Long = binlogPosition
 

@@ -1,5 +1,3 @@
-
-
 package com.fan.mysql.async.util
 
 import java.util.concurrent.atomic.AtomicInteger

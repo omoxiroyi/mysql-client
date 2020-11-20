@@ -2,12 +2,13 @@ package com.fan.mysql.async.encoder.auth
 
 import java.nio.charset.Charset
 
-
 object OldPasswordAuthentication extends AuthenticationMethod {
 
   final val EmptyArray = Array.empty[Byte]
 
-  def generateAuthentication(charset: Charset, password: Option[String], seed: Array[Byte]): Array[Byte] = {
+  def generateAuthentication(charset: Charset,
+                             password: Option[String],
+                             seed: Array[Byte]): Array[Byte] = {
     password match {
       case Some(value) if !value.isEmpty =>
         newCrypt(charset, value, new String(seed, charset))
@@ -59,14 +60,13 @@ object OldPasswordAuthentication extends AuthenticationMethod {
     var nr2 = 0x12345671L
     var tmp = 0L
 
-    password.foreach {
-      c =>
-        if (c != ' ' && c != '\t') {
-          tmp = 0xff & c
-          nr ^= ((((nr & 63) + add) * tmp) + (nr << 8))
-          nr2 += ((nr2 << 8) ^ nr)
-          add += tmp
-        }
+    password.foreach { c =>
+      if (c != ' ' && c != '\t') {
+        tmp = 0xff & c
+        nr ^= ((((nr & 63) + add) * tmp) + (nr << 8))
+        nr2 += ((nr2 << 8) ^ nr)
+        add += tmp
+      }
     }
 
     (nr & 0x7fffffffL, nr2 & 0x7fffffffL)

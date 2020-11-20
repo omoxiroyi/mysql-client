@@ -1,5 +1,3 @@
-
-
 package com.fan.mysql.async.encoder.auth
 
 import java.nio.charset.Charset
@@ -9,7 +7,9 @@ object MySQLNativePasswordAuthentication extends AuthenticationMethod {
 
   final val EmptyArray = Array.empty[Byte]
 
-  def generateAuthentication(charset: Charset, password: Option[String], seed: Array[Byte]): Array[Byte] = {
+  def generateAuthentication(charset: Charset,
+                             password: Option[String],
+                             seed: Array[Byte]): Array[Byte] = {
 
     if (password.isDefined) {
       scramble411(charset, password.get, seed)

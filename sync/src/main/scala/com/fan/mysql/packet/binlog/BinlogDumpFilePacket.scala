@@ -4,14 +4,15 @@ import com.fan.mysql.packet.CommandPacket
 import com.fan.mysql.util.MySQLPacketBuffer
 
 object BinlogDumpFilePacket {
+
   /** BINLOG_DUMP options */
-  val BINLOG_DUMP_NON_BLOCK: Int = 1
+  val BINLOG_DUMP_NON_BLOCK: Int           = 1
   val BINLOG_SEND_ANNOTATE_ROWS_EVENT: Int = 2
 }
 
 class BinlogDumpFilePacket extends CommandPacket {
-  var binlogPosition = 0L
-  var slaveServerId: Long = -1
+  var binlogPosition         = 0L
+  var slaveServerId: Long    = -1
   var binlogFileName: String = _
 
   def this(binlogFileName: String, binlogPosition: Long, slaveServerId: Long) = {
@@ -22,23 +23,21 @@ class BinlogDumpFilePacket extends CommandPacket {
     this.commandType = CommandPacket.COM_BINLOG_DUMP
   }
 
-  /**
-   * <pre>
-   * Bytes                        Name
-   * -----                        ----
-   * 1                            command
-   * n                            arg
-   * --------------------------------------------------------
-   * Bytes                        Name
-   * -----                        ----
-   * 4                            binlog position to start at (little endian)
-   * 2                            binlog flags (currently not used; always 0)
-   * 4                            server_id of the slave (little endian)
-   * n                            binlog file name (optional)
-   *
-   * </pre>
-   */
-
+  /** <pre>
+    * Bytes                        Name
+    * -----                        ----
+    * 1                            command
+    * n                            arg
+    * --------------------------------------------------------
+    * Bytes                        Name
+    * -----                        ----
+    * 4                            binlog position to start at (little endian)
+    * 2                            binlog flags (currently not used; always 0)
+    * 4                            server_id of the slave (little endian)
+    * n                            binlog file name (optional)
+    *
+    * </pre>
+    */
   override def write2Buffer(buffer: MySQLPacketBuffer): Unit = {
     super.write2Buffer(buffer)
     // 1. write 4 bytes bin-log position to start at

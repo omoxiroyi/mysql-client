@@ -5,9 +5,9 @@ import java.util
 
 class ResultSetPacket {
 
-  private[this] var sourceAddress: SocketAddress = _
+  private[this] var sourceAddress: SocketAddress             = _
   private[this] var fieldDescriptors: util.List[FieldPacket] = new util.ArrayList[FieldPacket]
-  private[this] val rows: util.List[util.List[String]] = new util.ArrayList[util.List[String]]
+  private[this] val rows: util.List[util.List[String]]       = new util.ArrayList[util.List[String]]
 
   def setFieldDescriptors(fieldDescriptors: util.List[FieldPacket]): Unit = {
     this.fieldDescriptors = fieldDescriptors
@@ -27,6 +27,7 @@ class ResultSetPacket {
 
   def getSourceAddress: SocketAddress = sourceAddress
 
-  override def toString: String = "ResultSetPacket [fieldDescriptors=" + fieldDescriptors + ", fieldValues=" + rows + ", sourceAddress=" + sourceAddress + "]"
+  override def toString: String =
+    "ResultSetPacket [fieldDescriptors=" + fieldDescriptors + ", fieldValues=" + rows + ", sourceAddress=" + sourceAddress + "]"
 
 }

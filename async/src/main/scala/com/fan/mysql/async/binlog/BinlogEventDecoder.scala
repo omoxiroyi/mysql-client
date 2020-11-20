@@ -79,16 +79,19 @@ class BinlogEventDecoder(context: BinlogDumpContext) extends MessageDecoder {
     var checksumAlg: Int = 0
 
     if (eventType == MySQLConstants.FORMAT_DESCRIPTION_EVENT) {
-      buffer.readerIndex(headerPos + LOG_EVENT_HEADER_LEN + FormatDescriptionEventParser.EVENT_HEADER_LEN_OFFSET)
+      buffer.readerIndex(
+        headerPos + LOG_EVENT_HEADER_LEN + FormatDescriptionEventParser.EVENT_HEADER_LEN_OFFSET)
       val commonHeaderLen = buffer.readUnsignedByte()
-      buffer.readerIndex(headerPos + commonHeaderLen + FormatDescriptionEventParser.SERVER_VER_OFFSET)
+      buffer.readerIndex(
+        headerPos + commonHeaderLen + FormatDescriptionEventParser.SERVER_VER_OFFSET)
       val serverVersion = buffer.readFixedASCIString(FormatDescriptionEventParser.SERVER_VER_LEN)
       val versionSplit = Array[Int](0, 0, 0)
       FormatDescriptionEventParser.doServerVersionSplit(serverVersion, versionSplit)
       checksumAlg = MySQLConstants.BINLOG_CHECKSUM_ALG_UNDEF
 
       if (FormatDescriptionEventParser.versionProduct(versionSplit) >= FormatDescriptionEventParser.checksumVersionProduct) {
-        buffer.readerIndex(headerPos + (eventLength - MySQLConstants.BINLOG_CHECKSUM_LEN - MySQLConstants.BINLOG_CHECKSUM_ALG_DESC_LEN).toInt)
+        buffer.readerIndex(
+          headerPos + (eventLength - MySQLConstants.BINLOG_CHECKSUM_LEN - MySQLConstants.BINLOG_CHECKSUM_ALG_DESC_LEN).toInt)
         checksumAlg = buffer.readUnsignedByte().asInstanceOf[Int]
       }
     } // we don't handle START_EVENT_V3 start event here.
@@ -99,8 +102,8 @@ class BinlogEventDecoder(context: BinlogDumpContext) extends MessageDecoder {
     buffer.readerIndex(headerPos + LOG_EVENT_HEADER_LEN)
 
     if (checksumAlg != MySQLConstants.BINLOG_CHECKSUM_ALG_UNDEF
-      && (eventType == MySQLConstants.FORMAT_DESCRIPTION_EVENT
-      || checksumAlg != MySQLConstants.BINLOG_CHECKSUM_ALG_OFF)) {
+        && (eventType == MySQLConstants.FORMAT_DESCRIPTION_EVENT
+        || checksumAlg != MySQLConstants.BINLOG_CHECKSUM_ALG_OFF)) {
       buffer.writerIndex(buffer.writerIndex() - MySQLConstants.BINLOG_CHECKSUM_LEN)
     }
 
@@ -126,41 +129,30 @@ class BinlogEventDecoder(context: BinlogDumpContext) extends MessageDecoder {
       case MySQLConstants.FORMAT_DESCRIPTION_EVENT =>
         parser = new FormatDescriptionEventParser
 
-
       case MySQLConstants.ROTATE_EVENT =>
         parser = new RotateEventParser
 
-
       case MySQLConstants.QUERY_EVENT =>
         parser = new QueryEventParser
-
 
       case MySQLConstants.TABLE_MAP_EVENT =>
         parser = new TableMapEventParser
         val tableMapParser = parser.asInstanceOf[TableMapEventParser]
         tableMapParser.setFilter(filter)
 
-
-      case MySQLConstants.DELETE_ROWS_EVENT
-           | MySQLConstants.DELETE_ROWS_EVENT_V1
-           | MySQLConstants.UPDATE_ROWS_EVENT
-           | MySQLConstants.UPDATE_ROWS_EVENT_V1
-           | MySQLConstants.WRITE_ROWS_EVENT
-           | MySQLConstants.WRITE_ROWS_EVENT_V1 =>
+      case MySQLConstants.DELETE_ROWS_EVENT | MySQLConstants.DELETE_ROWS_EVENT_V1 |
+          MySQLConstants.UPDATE_ROWS_EVENT | MySQLConstants.UPDATE_ROWS_EVENT_V1 |
+          MySQLConstants.WRITE_ROWS_EVENT | MySQLConstants.WRITE_ROWS_EVENT_V1 =>
         parser = new RowDataEventParser
-
 
       case MySQLConstants.XID_EVENT =>
         parser = new XidEventParser
 
-
       case MySQLConstants.GTID_LOG_EVENT =>
         parser = new GtidEventParser
 
-
       case MySQLConstants.PREVIOUS_GTIDS_LOG_EVENT =>
         parser = new PreviousGtidsParser
-
 
       case _ =>
         return null

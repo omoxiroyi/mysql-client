@@ -18,18 +18,20 @@ import org.apache.commons.lang3.StringUtils
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future, Promise}
-import scala.util.{Failure, Random, Success}
+import scala.util.{Failure, Success}
 
 object MySQLConnection {
   final val Counter: AtomicLong = new AtomicLong()
 }
 
 class MySQLConnection(
-                       configuration: Configuration,
-                       charsetMapper: CharsetMapper = CharsetMapper.Instance,
-                       group: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
-                       implicit val executionContext: ExecutionContext = ExecutorServiceUtils.CachedExecutionContext
-                     ) extends MySQLHandlerDelegate with Connection with TimeoutScheduler {
+    configuration: Configuration,
+    charsetMapper: CharsetMapper = CharsetMapper.Instance,
+    group: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
+    implicit val executionContext: ExecutionContext = ExecutorServiceUtils.CachedExecutionContext
+) extends MySQLHandlerDelegate
+    with Connection
+    with TimeoutScheduler {
 
   // Java constructor
   def this(configuration: Configuration) = this(configuration, CharsetMapper.Instance)
@@ -38,8 +40,8 @@ class MySQLConnection(
   charsetMapper.toInt(configuration.charset)
 
   private[this] final val connectionCount = MySQLConnection.Counter.incrementAndGet()
-  private[this] final val connectionId = s"[mysql-connection-$connectionCount]"
-  private[this] final val log = Log.getByName(connectionId)
+  private[this] final val connectionId    = s"[mysql-connection-$connectionCount]"
+  private[this] final val log             = Log.getByName(connectionId)
 
   private[this] final val connectionHandler = new MySQLConnectionHandler(
     configuration,
@@ -47,26 +49,28 @@ class MySQLConnection(
     this,
     group,
     executionContext,
-    connectionId)
+    connectionId
+  )
 
-  private[this] final val connectionPromise = Promise[Connection]()
+  private[this] final val connectionPromise    = Promise[Connection]()
   private[this] final val disconnectionPromise = Promise[Connection]()
 
-  private[this] val queryPromiseReference = new AtomicReference[Option[Promise[QueryResult]]](None)
-  private[this] var connected = false
+  private[this] val queryPromiseReference     = new AtomicReference[Option[Promise[QueryResult]]](None)
+  private[this] var connected                 = false
   private[this] var _lastException: Throwable = _
-  private[this] var serverVersion: String = _
+  private[this] var serverVersion: String     = _
 
   // dump binlog variables
-  private[this] val slaveId = math.abs(Random.nextLong(99999999)) + 1
-  private[this] val timeZone = "GMT-0:00"
-  private[this] var enableHeartBeat = true
-  private[this] val heartbeatInterval = 10
+  private[this] val slaveId                                = System.currentTimeMillis % 0x100000000L
+  private[this] val timeZone                               = "GMT-0:00"
+  private[this] var enableHeartBeat                        = true
+  private[this] val heartbeatInterval                      = 10
   private[this] var heartBeatScheduler: ScheduledFuture[_] = _
-  @volatile private[this] var lastEventReadTime = -1L
+  @volatile
+  private[this] var lastEventReadTime                = -1L
   private[this] var eventHandler: BinlogEventHandler = _
-  private[this] var eventFilter: BinlogEventFilter = _
-  private[this] var eventHandlerExecutor: Executor = _
+  private[this] var eventFilter: BinlogEventFilter   = _
+  private[this] var eventHandlerExecutor: Executor   = _
 
   def version: String = this.serverVersion
 
@@ -79,7 +83,7 @@ class MySQLConnection(
   def connect: Future[Connection] = {
     this.connectionHandler.connect().onComplete {
       case Failure(e) => this.connectionPromise.tryFailure(e)
-      case _ =>
+      case _          =>
     }
 
     this.connectionPromise.future
@@ -180,14 +184,16 @@ class MySQLConnection(
   override def onHandshake(message: HandshakeMessage): Unit = {
     this.serverVersion = message.serverVersion
 
-    this.connectionHandler.write(HandshakeResponseMessage(
-      configuration.username,
-      configuration.charset,
-      message.seed,
-      message.authenticationMethod,
-      database = configuration.database,
-      password = configuration.password
-    ))
+    this.connectionHandler.write(
+      HandshakeResponseMessage(
+        configuration.username,
+        configuration.charset,
+        message.seed,
+        message.authenticationMethod,
+        database = configuration.database,
+        password = configuration.password
+      )
+    )
   }
 
   override def switchAuthentication(message: AuthenticationSwitchRequest): Unit = {
@@ -204,14 +210,21 @@ class MySQLConnection(
     this.eventHandlerExecutor.execute(() => eventHandler.handle(event))
   }
 
-  def dump(dumpString: String, filter: BinlogEventFilter, handler: BinlogEventHandler,
-           executor: Executor): Future[Connection] = {
+  def dump(
+      dumpString: String,
+      filter: BinlogEventFilter,
+      handler: BinlogEventHandler,
+      executor: Executor
+  ): Future[Connection] = {
     // todo check is dumping state as well
     this.validateIsReadyForQuery()
 
-    require(handler != null, "You must give a event handler to consume event")
-    require(executor != null, "You have to provide a ExecutionContext to handle event," +
-      " because we can not do any block operation in netty worker thread pool.")
+    require(handler != null, "You must give an event handler to consume event")
+    require(
+      executor != null,
+      "You have to provide an ExecutionContext to handle event," +
+        " because we can not do any block operation in netty worker thread pool."
+    )
 
     this.eventHandler = handler
     this.eventFilter = filter
@@ -221,18 +234,18 @@ class MySQLConnection(
 
     // init common variables for dump session
     (for {
-      _ <- this.sendQuery("set wait_timeout=9999999")
-      _ <- this.sendQuery("set net_write_timeout=1800")
-      _ <- this.sendQuery("set net_read_timeout=1800")
-      _ <- this.sendQuery("set names 'binary'")
-      _ <- this.sendQuery("set @master_binlog_checksum= @@global.binlog_checksum")
-      _ <- this.sendQuery(s"set @master_heartbeat_period=${heartbeatInterval * 1000000000L}")
+      _            <- this.sendQuery("set wait_timeout=9999999")
+      _            <- this.sendQuery("set net_write_timeout=1800")
+      _            <- this.sendQuery("set net_read_timeout=1800")
+      _            <- this.sendQuery("set names 'binary'")
+      _            <- this.sendQuery("set @master_binlog_checksum= @@global.binlog_checksum")
+      _            <- this.sendQuery(s"set @master_heartbeat_period=${heartbeatInterval * 1000000000L}")
       checksumType <- this.sendQuery("select @master_binlog_checksum")
     } yield {
 
       val dumpContext = checksumType.rows.map(_.apply(0).apply(0)) match {
         case Some(a: String) if a == "CRC32" =>
-          log.debug(s"Dump binlog checksum type is CRC32")
+          log.debug("Dump binlog checksum type is CRC32")
           new BinlogDumpContext(MySQLConstants.BINLOG_CHECKSUM_ALG_CRC32)
         case _ => new BinlogDumpContext(MySQLConstants.BINLOG_CHECKSUM_ALG_OFF)
       }
@@ -244,13 +257,18 @@ class MySQLConnection(
     }).flatMap { dumpContext =>
       // todo we should provide two api to distinguish between dump file and dump gtid.
       if (StringUtils.isEmpty(dumpString)) {
-        this.connectionHandler.write(
-          BinlogDumpMessage("", 4, this.slaveId), dumpContext)
+        this.connectionHandler.write(BinlogDumpMessage("", 4, this.slaveId), dumpContext)
       } else if (dumpString.contains(".") && dumpString.contains(":")) {
         val splits = dumpString.split(":")
-        this.connectionHandler.write(BinlogDumpMessage(splits(0), splits(1).toInt, this.slaveId), dumpContext)
+        this.connectionHandler.write(
+          BinlogDumpMessage(splits(0), splits(1).toInt, this.slaveId),
+          dumpContext
+        )
       } else {
-        this.connectionHandler.write(BinlogDumpGTIDMessage("", 4, dumpString, this.slaveId), dumpContext)
+        this.connectionHandler.write(
+          BinlogDumpGTIDMessage("", 4, dumpString, this.slaveId),
+          dumpContext
+        )
       }
     }.map { _ =>
       // start heart beat check schedule finally
@@ -272,13 +290,15 @@ class MySQLConnection(
 
     val nextDelay = currentTime - lastReadTime
 
-    log.trace(s"Dump heartbeat check, current time: $currentTime, last read: $lastReadTime, delay time: $nextDelay ms")
+    log.trace(
+      s"Dump heartbeat check, current time: $currentTime, last read: $lastReadTime, delay time: $nextDelay ms"
+    )
 
     if (nextDelay >= 2 * heartbeatInterval * 1000) {
       log.error("Dump binlog check heartbeat timeout, connection will be close")
       this.close.onComplete {
         case Success(_) => log.info("Close timed out connection successfully")
-        case Failure(e) => log.error("Close timed out failed", e)
+        case Failure(e) => log.error("Close timed out connection failed", e)
       }
     }
   }

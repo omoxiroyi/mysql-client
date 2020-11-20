@@ -9,7 +9,6 @@ class RowDataEvent(header: EventHeader, tableId: Long) extends AbstractEvent(hea
   private val rows: util.List[RowData] = new util.ArrayList[RowData](2)
   private var flags = 0
 
-
   def getFlags: Int = flags
 
   def setFlags(flags: Int): Unit = {

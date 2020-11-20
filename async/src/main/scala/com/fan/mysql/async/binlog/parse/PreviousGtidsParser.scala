@@ -12,12 +12,14 @@ import io.netty.buffer.ByteBuf
 
 class PreviousGtidsParser extends BinlogEventParser {
 
-  override def parse(buffer: ByteBuf, header: EventHeader, context: BinlogDumpContext): BinlogEvent = {
+  override def parse(buffer: ByteBuf,
+                     header: EventHeader,
+                     context: BinlogDumpContext): BinlogEvent = {
     val event = new PreviousGtidsEvent(header)
     val sb = new StringBuffer
     val sidNumberCount = buffer.readLong()
     var i = 0
-    while ( {
+    while ({
       i < sidNumberCount
     }) {
       if (sb.length > 0) sb.append(",")
@@ -26,7 +28,7 @@ class PreviousGtidsParser extends BinlogEventParser {
       sb.append(uuidStr)
       val internalCount = buffer.readLong()
       var j = 0
-      while ( {
+      while ({
         j < internalCount
       }) {
         val from = buffer.readUnsignedLong()
@@ -169,7 +171,6 @@ class PreviousGtidsParser extends BinlogEventParser {
         b = 15
 
       case _ =>
-
     }
     b
   }

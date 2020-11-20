@@ -1,5 +1,3 @@
-
-
 package com.fan.mysql.async.message.client
 
 import com.fan.mysql.async.db.KindedMessage

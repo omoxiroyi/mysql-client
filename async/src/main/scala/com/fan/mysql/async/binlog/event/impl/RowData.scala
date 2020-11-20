@@ -7,9 +7,9 @@ import org.apache.commons.lang3.builder.{ToStringBuilder, ToStringStyle}
 
 class RowData {
   private var beforeColumns: Array[EventColumn] = _
-  private var afterColumns: Array[EventColumn] = _
-  private var beforeBit: util.BitSet = _
-  private var afterBit: util.BitSet = _
+  private var afterColumns: Array[EventColumn]  = _
+  private var beforeBit: util.BitSet            = _
+  private var afterBit: util.BitSet             = _
 
   def getBeforeColumns: Array[EventColumn] = beforeColumns
 
