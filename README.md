@@ -1,2 +1,2 @@
 # mysql-client
-A mysql client implementation on JVM, support dump gtid binlog.
+A pure asynchronous mysql client implementation on JVM, support dump gtid binlog.
